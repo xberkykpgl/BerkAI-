@@ -108,6 +108,10 @@ class AISettings(BaseModel):
 
 # ============= AUTH HELPERS =============
 
+# Simple admin credentials (in production, use proper hashing)
+ADMIN_EMAIL = "admin@berkai.com"
+ADMIN_PASSWORD = "BerkAI2025!"  # Change this in production
+
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token in cookie or Authorization header"""
     session_token = request.cookies.get("session_token")
