@@ -4,6 +4,8 @@ import axios from 'axios';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import SessionPage from './pages/SessionPage';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
