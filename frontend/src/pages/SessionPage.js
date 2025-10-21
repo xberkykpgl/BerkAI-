@@ -353,25 +353,41 @@ export default function SessionPage() {
                 ))}
               </div>
 
-              <div className="flex gap-2">
-                <Textarea 
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                  placeholder="Mesajınızı yazın..."
-                  data-testid="message-input"
-                  className="resize-none"
-                  rows={3}
-                  disabled={isSending}
-                />
-                <Button 
-                  onClick={sendMessage}
-                  disabled={!inputMessage.trim() || isSending}
-                  data-testid="send-message-button"
-                  className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Textarea 
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+                    placeholder="Mesajınızı yazın veya ses ile konuşun..."
+                    data-testid="message-input"
+                    className="resize-none flex-1"
+                    rows={3}
+                    disabled={isSending}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={isRecording ? stopRecording : startRecording}
+                      data-testid="toggle-mic-button"
+                      variant={isRecording ? 'destructive' : 'outline'}
+                      size="icon"
+                      className="h-12 w-12"
+                    >
+                      {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                    </Button>
+                    <Button 
+                      onClick={sendMessage}
+                      disabled={!inputMessage.trim() || isSending}
+                      data-testid="send-message-button"
+                      size="icon"
+                      className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 h-12 w-12"
+                    >
+                      <Send className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+                {/* Hidden audio player for TTS */}
+                <audio ref={audioRef} className="hidden" />
               </div>
             </Card>
           </div>
