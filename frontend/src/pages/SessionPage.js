@@ -407,6 +407,7 @@ export default function SessionPage() {
 
 function MessageBubble({ message }) {
   const isUser = message.role === 'user';
+  const isLoading = message.isLoading;
   
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} chat-message`}>
@@ -415,7 +416,9 @@ function MessageBubble({ message }) {
           ? 'bg-gradient-to-r from-teal-600 to-blue-600 text-white' 
           : 'bg-gray-100 text-gray-900'
       }`}>
-        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+        <p className={`text-sm whitespace-pre-wrap ${isLoading ? 'pulse-animation' : ''}`}>
+          {message.content}
+        </p>
         <p className={`text-xs mt-1 ${
           isUser ? 'text-teal-100' : 'text-gray-500'
         }`}>
