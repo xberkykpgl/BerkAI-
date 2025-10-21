@@ -279,6 +279,9 @@ async def chat_with_berkai(request: Request, session_id: str):
     user_message_text = data.get("message", "")
     video_frame = data.get("video_frame")  # base64
     
+    # Set timeout for entire operation
+    timeout_seconds = 60  # Increased for video analysis
+    
     # Save user message
     user_msg = Message(
         session_id=session_id,
