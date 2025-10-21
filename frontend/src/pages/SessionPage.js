@@ -135,6 +135,16 @@ export default function SessionPage() {
     };
     setMessages(prev => [...prev, userMsg]);
 
+    // Add loading message
+    const loadingMsg = {
+      id: Date.now().toString() + '_loading',
+      role: 'assistant',
+      content: isVideoOn ? 'Video analiz ediliyor ve yanıt hazırlanıyor...' : 'Yanıt hazırlanıyor...',
+      timestamp: new Date().toISOString(),
+      isLoading: true
+    };
+    setMessages(prev => [...prev, loadingMsg]);
+
     try {
       // Capture frame if video is on
       const frameData = isVideoOn ? captureFrame() : null;
@@ -144,7 +154,9 @@ export default function SessionPage() {
         video_frame: frameData
       });
 
-      // Add AI response to UI
+      // Remove loading message and add AI response
+      setMessages(prev => prev.filter(m => m.id !== loadingMsg.id));
+
       const aiMsg = {
         id: Date.now().toString() + '_ai',
         role: 'assistant',
@@ -161,6 +173,7 @@ export default function SessionPage() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      setMessages(prev => prev.filter(m => m.id !== loadingMsg.id));
       toast.error('Mesaj gönderilemedi');
     } finally {
       setIsSending(false);
