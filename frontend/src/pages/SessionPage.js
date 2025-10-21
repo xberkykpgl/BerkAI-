@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Video, VideoOff, Send, Brain, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Video, VideoOff, Send, Brain, Activity, AlertCircle, CheckCircle, Mic, MicOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Textarea } from '../components/ui/textarea';
@@ -19,6 +19,9 @@ export default function SessionPage() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const captureIntervalRef = useRef(null);
+  const audioRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -27,6 +30,8 @@ export default function SessionPage() {
   const [isSending, setIsSending] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
 
   useEffect(() => {
     loadSession();
