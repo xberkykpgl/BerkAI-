@@ -124,55 +124,54 @@ export default function SessionPage() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      // Use browser's built-in Speech Recognition API
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast.error('Tarayıcınız ses tanımayı desteklemiyor');
+        return;
+      }
 
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'tr-TR';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        toast.success('Dinliyorum - konuşun...');
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        
-        // Transcribe audio using Whisper
-        try {
-          const formData = new FormData();
-          formData.append('file', audioBlob, 'recording.webm');
-          
-          const response = await axios.post(`${API}/transcribe`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-          
-          // Set transcribed text to input
-          setInputMessage(response.data.text);
-          toast.success('Ses metne çevrildi!');
-        } catch (error) {
-          console.error('Transcription error:', error);
-          toast.error('Ses çevrilemedi');
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+        toast.success('Ses metne çevrildi!');
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        if (event.error === 'no-speech') {
+          toast.error('Ses algılanamadı, lütfen tekrar deneyin');
+        } else {
+          toast.error('Ses tanıma hatası: ' + event.error);
         }
-        
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
-      setIsRecording(true);
-      toast.success('Ses kaydı başladı - konuşun');
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
     } catch (error) {
-      console.error('Microphone access error:', error);
-      toast.error('Mikrofon erişimi reddedildi');
+      console.error('Speech recognition error:', error);
+      toast.error('Ses tanıma başlatılamadı');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
+    // Speech recognition otomatik durur
+    setIsRecording(false);
   };
 
   const sendMessage = async () => {
