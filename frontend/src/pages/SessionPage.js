@@ -126,7 +126,7 @@ export default function SessionPage() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       
       if (!SpeechRecognition) {
-        toast.error('Tarayıcınız ses tanımayı desteklemiyor');
+        toast.error('Tarayıcınız ses tanımayı desteklemiyor. Lütfen Chrome veya Edge kullanın.');
         return;
       }
 
@@ -134,25 +134,38 @@ export default function SessionPage() {
       recognition.lang = 'tr-TR';
       recognition.continuous = false;
       recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsRecording(true);
-        toast.success('Dinliyorum - konuşun...');
+        toast.success('🎤 Dinliyorum - konuşun...', { duration: 5000 });
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setInputMessage(transcript);
-        toast.success('Ses metne çevrildi!');
+        toast.success('✅ Ses metne çevrildi!');
       };
 
       recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
-        if (event.error === 'no-speech') {
-          toast.error('Ses algılanamadı, lütfen tekrar deneyin');
-        } else {
-          toast.error('Ses tanıma hatası: ' + event.error);
+        
+        switch(event.error) {
+          case 'network':
+            toast.error('🌐 İnternet bağlantısı gerekli. Lütfen bağlantınızı kontrol edin veya metin yazın.');
+            break;
+          case 'no-speech':
+            toast.error('🔇 Ses algılanamadı. Lütfen tekrar deneyin veya metin yazın.');
+            break;
+          case 'not-allowed':
+            toast.error('🎤 Mikrofon izni reddedildi. Tarayıcı ayarlarından izin verin.');
+            break;
+          case 'aborted':
+            toast.info('Ses kaydı iptal edildi.');
+            break;
+          default:
+            toast.error(`Ses tanıma hatası: ${event.error}. Lütfen metin yazın.`);
         }
       };
 
@@ -160,10 +173,19 @@ export default function SessionPage() {
         setIsRecording(false);
       };
 
-      recognition.start();
+      // Request microphone permission first
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        recognition.start();
+      } catch (permError) {
+        toast.error('🎤 Mikrofon erişimi gerekli. Tarayıcı ayarlarından izin verin.');
+        setIsRecording(false);
+      }
+      
     } catch (error) {
       console.error('Speech recognition error:', error);
-      toast.error('Ses tanıma başlatılamadı');
+      toast.error('Ses tanıma başlatılamadı. Lütfen metin yazın.');
+      setIsRecording(false);
     }
   };
 
