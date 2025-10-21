@@ -182,7 +182,7 @@ export default function SessionPage() {
     const loadingMsg = {
       id: Date.now().toString() + '_loading',
       role: 'assistant',
-      content: isVideoOn ? 'Video analiz ediliyor ve yanıt hazırlanıyor...' : 'Yanıt hazırlanıyor...',
+      content: 'BerkAI düşünüyor ve yanıt hazırlıyor...',
       timestamp: new Date().toISOString(),
       isLoading: true
     };
@@ -205,9 +205,18 @@ export default function SessionPage() {
         role: 'assistant',
         content: response.data.message,
         video_analysis: response.data.video_analysis,
+        audio_url: response.data.audio_url,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, aiMsg]);
+
+      // Play audio if available
+      if (response.data.audio_url && audioRef.current) {
+        audioRef.current.src = `${BACKEND_URL}${response.data.audio_url}`;
+        audioRef.current.play().catch(err => {
+          console.error('Audio playback error:', err);
+        });
+      }
 
       // Update current analysis
       if (response.data.video_analysis) {
