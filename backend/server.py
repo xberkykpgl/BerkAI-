@@ -32,9 +32,8 @@ api_router = APIRouter(prefix="/api")
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 GEMINI_API_KEY = os.environ['GEMINI_API_KEY']
 
-# OpenAI client for TTS (TTS için ayrı key gerekli veya disable edilmeli)
-# openai_client = AsyncOpenAI(api_key=EMERGENT_LLM_KEY)  # Emergent key TTS desteklemiyor
-openai_client = None  # TTS şimdilik disabled
+# OpenAI client for Whisper
+openai_client = AsyncOpenAI(api_key=EMERGENT_LLM_KEY)
 
 # ============= MODELS =============
 
