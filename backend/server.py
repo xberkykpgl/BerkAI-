@@ -32,6 +32,9 @@ api_router = APIRouter(prefix="/api")
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 GEMINI_API_KEY = os.environ['GEMINI_API_KEY']
 
+# OpenAI client for TTS
+openai_client = AsyncOpenAI(api_key=EMERGENT_LLM_KEY)
+
 # ============= MODELS =============
 
 class User(BaseModel):
