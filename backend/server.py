@@ -556,6 +556,213 @@ async def serve_audio(filename: str):
         filename=filename
     )
 
+# ============= ADMIN ROUTES =============
+
+@api_router.post("/admin/login")
+async def admin_login(request: Request, response: Response):
+    """Admin login endpoint"""
+    data = await request.json()
+    email = data.get("email")
+    password = data.get("password")
+    
+    if email != ADMIN_EMAIL or password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create admin session
+    admin_token = f"admin_session_{uuid.uuid4()}"
+    admin_session_doc = {
+        "session_token": admin_token,
+        "email": email,
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=1),
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.admin_sessions.insert_one(admin_session_doc)
+    
+    # Set cookie
+    response.set_cookie(
+        key="admin_token",
+        value=admin_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=24*60*60,
+        path="/"
+    )
+    
+    return {"success": True, "email": email}
+
+@api_router.post("/admin/logout")
+async def admin_logout(request: Request, response: Response):
+    """Admin logout"""
+    admin_token = request.cookies.get("admin_token")
+    if admin_token:
+        await db.admin_sessions.delete_many({"session_token": admin_token})
+    response.delete_cookie("admin_token", path="/")
+    return {"success": True}
+
+@api_router.get("/admin/verify")
+async def verify_admin_access(request: Request):
+    """Verify admin session"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    return {"success": True}
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(request: Request):
+    """Get platform statistics"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    # Count documents
+    total_users = await db.users.count_documents({})
+    total_sessions = await db.therapy_sessions.count_documents({})
+    total_messages = await db.messages.count_documents({})
+    active_sessions = await db.therapy_sessions.count_documents({"status": "active"})
+    total_analyses = await db.video_analyses.count_documents({})
+    
+    # Recent activity
+    recent_sessions = await db.therapy_sessions.find({}).sort("started_at", -1).limit(10).to_list(10)
+    recent_users = await db.users.find({}).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Average stress level
+    all_analyses = await db.video_analyses.find({"stress_level": {"$exists": True}}).to_list(1000)
+    avg_stress = sum([a.get("stress_level", 0) for a in all_analyses]) / len(all_analyses) if all_analyses else 0
+    
+    # Emotion distribution
+    emotions = [a.get("emotion_detected") for a in all_analyses if a.get("emotion_detected")]
+    from collections import Counter
+    emotion_counts = dict(Counter(emotions))
+    
+    return {
+        "totals": {
+            "users": total_users,
+            "sessions": total_sessions,
+            "messages": total_messages,
+            "active_sessions": active_sessions,
+            "video_analyses": total_analyses
+        },
+        "analytics": {
+            "average_stress": round(avg_stress, 2),
+            "emotion_distribution": emotion_counts
+        },
+        "recent_activity": {
+            "sessions": [{"id": s.get("id"), "user_id": s.get("user_id"), "started_at": s.get("started_at"), "status": s.get("status")} for s in recent_sessions],
+            "users": [{"email": u.get("email"), "name": u.get("name"), "created_at": u.get("created_at")} for u in recent_users]
+        }
+    }
+
+@api_router.get("/admin/users")
+async def get_all_users(request: Request):
+    """Get all users"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    users = await db.users.find({}, {"_id": 1, "email": 1, "name": 1, "picture": 1, "created_at": 1}).to_list(1000)
+    
+    # Get session counts for each user
+    for user in users:
+        session_count = await db.therapy_sessions.count_documents({"user_id": user["_id"]})
+        message_count = await db.messages.count_documents({"user_id": user["_id"]})
+        user["session_count"] = session_count
+        user["message_count"] = message_count
+        user["id"] = user.pop("_id")
+    
+    return users
+
+@api_router.get("/admin/users/{user_id}")
+async def get_user_detail(request: Request, user_id: str):
+    """Get user details"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    user = await db.users.find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    sessions = await db.therapy_sessions.find({"user_id": user_id}).sort("started_at", -1).to_list(100)
+    messages = await db.messages.find({"user_id": user_id}).sort("timestamp", -1).limit(50).to_list(50)
+    
+    user["id"] = user.pop("_id")
+    
+    return {
+        "user": user,
+        "sessions": sessions,
+        "recent_messages": messages
+    }
+
+@api_router.get("/admin/sessions")
+async def get_all_sessions(request: Request, limit: int = 50):
+    """Get all therapy sessions"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    sessions = await db.therapy_sessions.find({}).sort("started_at", -1).limit(limit).to_list(limit)
+    
+    return sessions
+
+@api_router.get("/admin/sessions/{session_id}/messages")
+async def get_session_messages_admin(request: Request, session_id: str):
+    """Get session messages (admin)"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    messages = await db.messages.find({"session_id": session_id}, {"_id": 0}).sort("timestamp", 1).to_list(1000)
+    
+    return messages
+
+@api_router.get("/admin/settings")
+async def get_ai_settings(request: Request):
+    """Get AI settings"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    settings = await db.ai_settings.find_one({})
+    
+    if not settings:
+        # Default settings
+        default_settings = {
+            "id": str(uuid.uuid4()),
+            "chat_model": "gpt-5",
+            "chat_provider": "openai",
+            "vision_model": "gemini-2.5-pro",
+            "tts_voice": "nova",
+            "tts_model": "tts-1",
+            "system_prompt": "Sen BerkAI'sın, empatik ve profesyonel bir psikolojik destek asistanısın.",
+            "max_message_length": 2000,
+            "enable_video_analysis": True,
+            "enable_tts": True,
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.ai_settings.insert_one(default_settings)
+        return default_settings
+    
+    return settings
+
+@api_router.put("/admin/settings")
+async def update_ai_settings(request: Request):
+    """Update AI settings"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    data = await request.json()
+    data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.ai_settings.update_one(
+        {},
+        {"$set": data},
+        upsert=True
+    )
+    
+    return {"success": True}
+
 # ============= MAIN =============
 
 app.include_router(api_router)
