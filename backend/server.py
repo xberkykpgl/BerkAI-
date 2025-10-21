@@ -557,6 +557,36 @@ async def serve_audio(filename: str):
         filename=filename
     )
 
+# ============= SPEECH TO TEXT =============
+
+@api_router.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """Transcribe audio to text using Whisper"""
+    try:
+        # Save uploaded file temporarily
+        temp_path = f"/tmp/audio_{uuid.uuid4()}.webm"
+        
+        with open(temp_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+        
+        # Transcribe using Whisper
+        with open(temp_path, "rb") as audio_file:
+            transcript = await openai_client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                language="tr"  # Turkish
+            )
+        
+        # Cleanup
+        os.remove(temp_path)
+        
+        return {"text": transcript.text}
+        
+    except Exception as e:
+        logging.error(f"Transcription error: {e}")
+        raise HTTPException(status_code=500, detail="Transcription failed")
+
 # ============= ADMIN ROUTES =============
 
 @api_router.post("/admin/login")
