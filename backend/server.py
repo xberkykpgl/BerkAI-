@@ -492,6 +492,25 @@ async def get_session_analytics(request: Request, session_id: str):
         }
     }
 
+# ============= AUDIO SERVING =============
+
+@api_router.get("/audio/{filename}")
+async def serve_audio(filename: str):
+    """Serve generated audio files"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    audio_path = f"/tmp/{filename}"
+    
+    if not os.path.exists(audio_path):
+        raise HTTPException(status_code=404, detail="Audio file not found")
+    
+    return FileResponse(
+        audio_path,
+        media_type="audio/mpeg",
+        filename=filename
+    )
+
 # ============= MAIN =============
 
 app.include_router(api_router)
