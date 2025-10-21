@@ -84,6 +84,28 @@ class VideoAnalysis(BaseModel):
     emotion_detected: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class Admin(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(alias="_id")
+    email: str
+    name: str
+    password_hash: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AISettings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    chat_model: str = "gpt-5"
+    chat_provider: str = "openai"
+    vision_model: str = "gemini-2.5-pro"
+    tts_voice: str = "nova"
+    tts_model: str = "tts-1"
+    system_prompt: str
+    max_message_length: int = 2000
+    enable_video_analysis: bool = True
+    enable_tts: bool = True
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============= AUTH HELPERS =============
 
 async def get_current_user(request: Request) -> Optional[User]:
