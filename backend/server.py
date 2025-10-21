@@ -137,6 +137,25 @@ async def get_current_user(request: Request) -> Optional[User]:
         return User(**user_doc)
     return None
 
+async def verify_admin(request: Request) -> bool:
+    """Verify admin access"""
+    admin_token = request.cookies.get("admin_token")
+    
+    if not admin_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            admin_token = auth_header.replace("Bearer ", "")
+    
+    if not admin_token:
+        return False
+    
+    admin_session = await db.admin_sessions.find_one({
+        "session_token": admin_token,
+        "expires_at": {"$gt": datetime.now(timezone.utc)}
+    })
+    
+    return admin_session is not None
+
 # ============= AUTH ROUTES =============
 
 @api_router.get("/auth/me")
