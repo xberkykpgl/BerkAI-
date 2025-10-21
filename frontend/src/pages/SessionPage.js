@@ -19,7 +19,6 @@ export default function SessionPage() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const captureIntervalRef = useRef(null);
-  const audioRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
@@ -31,7 +30,6 @@ export default function SessionPage() {
   const [analytics, setAnalytics] = useState(null);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [currentAudioUrl, setCurrentAudioUrl] = useState(null);
 
   useEffect(() => {
     loadSession();
