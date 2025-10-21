@@ -220,17 +220,17 @@ export default function SessionPage() {
         role: 'assistant',
         content: response.data.message,
         video_analysis: response.data.video_analysis,
-        audio_url: response.data.audio_url,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, aiMsg]);
 
-      // Play audio if available
-      if (response.data.audio_url && audioRef.current) {
-        audioRef.current.src = `${BACKEND_URL}${response.data.audio_url}`;
-        audioRef.current.play().catch(err => {
-          console.error('Audio playback error:', err);
-        });
+      // Speak response using Web Speech API
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(response.data.message);
+        utterance.lang = 'tr-TR';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
       }
 
       // Update current analysis
