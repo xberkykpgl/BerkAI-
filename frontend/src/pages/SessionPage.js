@@ -124,6 +124,44 @@ export default function SessionPage() {
     return canvas.toDataURL('image/jpeg', 0.8);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Convert speech to text (basit transcription - gerçek uygulamada Whisper API kullanılabilir)
+        // Şimdilik kullanıcı metin yazacak veya ses kayıt yapacak
+        toast.info('Ses kaydedildi. Mesajınızı metin olarak da yazabilirsiniz.');
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast.success('Ses kaydı başladı');
+    } catch (error) {
+      console.error('Microphone access error:', error);
+      toast.error('Mikrofon erişimi reddedildi');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const sendMessage = async () => {
     if (!inputMessage.trim() || isSending) return;
 
