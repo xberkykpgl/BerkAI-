@@ -138,9 +138,24 @@ export default function SessionPage() {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         
-        // Convert speech to text (basit transcription - gerçek uygulamada Whisper API kullanılabilir)
-        // Şimdilik kullanıcı metin yazacak veya ses kayıt yapacak
-        toast.info('Ses kaydedildi. Mesajınızı metin olarak da yazabilirsiniz.');
+        // Transcribe audio using Whisper
+        try {
+          const formData = new FormData();
+          formData.append('file', audioBlob, 'recording.webm');
+          
+          const response = await axios.post(`${API}/transcribe`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+          // Set transcribed text to input
+          setInputMessage(response.data.text);
+          toast.success('Ses metne çevrildi!');
+        } catch (error) {
+          console.error('Transcription error:', error);
+          toast.error('Ses çevrilemedi');
+        }
         
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
@@ -148,7 +163,7 @@ export default function SessionPage() {
 
       mediaRecorder.start();
       setIsRecording(true);
-      toast.success('Ses kaydı başladı');
+      toast.success('Ses kaydı başladı - konuşun');
     } catch (error) {
       console.error('Microphone access error:', error);
       toast.error('Mikrofon erişimi reddedildi');
