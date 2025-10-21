@@ -350,9 +350,34 @@ Kullanıcı profili: {user.name} ({user.email})
     )
     await db.messages.insert_one(ai_msg.model_dump())
     
+    # Generate TTS audio
+    audio_url = None
+    try:
+        # Generate speech using OpenAI TTS
+        response = await openai_client.audio.speech.create(
+            model="tts-1",
+            voice="nova",  # Warm, friendly voice
+            input=ai_response[:2000]  # Limit to 2000 chars for TTS
+        )
+        
+        # Save audio file
+        audio_filename = f"berkai_audio_{uuid.uuid4()}.mp3"
+        audio_path = f"/tmp/{audio_filename}"
+        
+        # Write audio to file
+        with open(audio_path, "wb") as f:
+            async for chunk in response.iter_bytes(chunk_size=1024):
+                f.write(chunk)
+        
+        audio_url = f"/api/audio/{audio_filename}"
+    except Exception as e:
+        logging.error(f"TTS generation error: {e}")
+        # Continue without audio if TTS fails
+    
     return {
         "message": ai_response,
-        "video_analysis": video_analysis_result
+        "video_analysis": video_analysis_result,
+        "audio_url": audio_url
     }
 
 # ============= VIDEO ANALYSIS =============
