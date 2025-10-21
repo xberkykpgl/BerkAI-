@@ -399,8 +399,6 @@ export default function SessionPage() {
                     </Button>
                   </div>
                 </div>
-                {/* Hidden audio player for TTS */}
-                <audio ref={audioRef} className="hidden" />
               </div>
             </Card>
           </div>
