@@ -386,12 +386,16 @@ export default function SessionPage() {
               </div>
 
               <div className="space-y-3">
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <Mic className="w-3 h-3" />
+                  <span>Mikrofon ile konuşun veya metin yazın • BerkAI sesli yanıt verir</span>
+                </div>
                 <div className="flex gap-2">
                   <Textarea 
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                    placeholder="Mesajınızı yazın veya ses ile konuşun..."
+                    placeholder="Mesajınızı yazın veya mikrofona basıp konuşun..."
                     data-testid="message-input"
                     className="resize-none flex-1"
                     rows={3}
