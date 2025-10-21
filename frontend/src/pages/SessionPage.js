@@ -19,8 +19,6 @@ export default function SessionPage() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const captureIntervalRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
 
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
