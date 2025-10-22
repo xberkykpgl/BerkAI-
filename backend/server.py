@@ -178,7 +178,7 @@ async def create_session_from_emergent(request: Request, response: Response):
     # Get user data from Emergent Auth
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            f"{AUTH_SERVICE_URL}/auth/v1/env/oauth/session-data",
             headers={"X-Session-ID": session_id}
         )
         
