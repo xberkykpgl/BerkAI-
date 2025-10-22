@@ -2,7 +2,7 @@ import { Brain, Video, MessageCircle, Shield, Sparkles, ArrowRight } from 'lucid
 import { Button } from '../components/ui/button';
 
 const REDIRECT_URL = encodeURIComponent(window.location.origin + '/dashboard');
-const AUTH_URL = `https://auth.emergentagent.com/?redirect=${REDIRECT_URL}`;
+const AUTH_URL = `${process.env.REACT_APP_AUTH_URL}/?redirect=${REDIRECT_URL}`;
 
 export default function LandingPage() {
   const handleLogin = () => {
