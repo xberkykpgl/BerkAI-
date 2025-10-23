@@ -812,9 +812,17 @@ async def add_doctor_note(request: Request, patient_id: str):
         await db.doctor_notes.insert_one(note)
         print("DEBUG: Note inserted successfully")
         
-        # Return serializable version
-        note_response = note.copy()
-        note_response["timestamp"] = note_response["timestamp"].isoformat()
+        # Return serializable version (exclude MongoDB _id)
+        note_response = {
+            "id": note["id"],
+            "doctor_id": note["doctor_id"],
+            "patient_id": note["patient_id"],
+            "session_id": note["session_id"],
+            "note_type": note["note_type"],
+            "content": note["content"],
+            "tags": note["tags"],
+            "timestamp": note["timestamp"].isoformat()
+        }
         print(f"DEBUG: Returning response: {note_response}")
         return {"success": True, "note": note_response}
         
