@@ -328,9 +328,7 @@ async def chat_with_berkai(request: Request, session_id: str):
     data = await request.json()
     user_message_text = data.get("message", "")
     video_frame = data.get("video_frame")  # base64
-    
-    # Set timeout for entire operation
-    timeout_seconds = 60  # Increased for video analysis
+    analyze_video = data.get("analyze_video", False)  # Optional video analysis
     
     # Save user message
     user_msg = Message(
@@ -341,43 +339,37 @@ async def chat_with_berkai(request: Request, session_id: str):
     )
     await db.messages.insert_one(user_msg.model_dump())
     
-    # Get conversation history
+    # Get conversation history (last 10 messages for context)
     history = await db.messages.find(
         {"session_id": session_id, "user_id": user.id},
         {"_id": 0}
-    ).sort("timestamp", 1).limit(20).to_list(20)
+    ).sort("timestamp", 1).limit(10).to_list(10)
     
-    # Video analysis if frame provided
+    # Video analysis only if requested and frame provided
     video_analysis_result = None
-    if video_frame:
+    if analyze_video and video_frame:
         video_analysis_result = await analyze_video_frame(video_frame, user.id, session_id)
     
-    # Build context for GPT-5
+    # Build concise context for faster response
     context_messages = []
-    for msg in history[-10:]:
-        context_messages.append(f"{msg['role']}: {msg['content']}")
+    for msg in history[-6:]:  # Reduced to last 6 messages
+        role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
+        context_messages.append(f"{role}: {msg['content'][:200]}")  # Limit length
     
     conversation_context = "\n".join(context_messages)
     
-    system_prompt = f"""Sen BerkAI'sın, empatik ve profesyonel bir psikolojik destek asistanısın. 
-    
-Görevin:
-1. Kullanıcının duygusal durumunu anlamak
-2. Derinlemesine ve anlayışlı sorular sormak
-3. Hem bir dost hem de profesyonel bir psikolog gibi davranmak
-4. Kullanıcının sözlerini dikkatle dinlemek ve gerçek duygularını anlamaya çalışmak
-5. Yargılamadan, destekleyici bir ortam oluşturmak
+    # Optimized system prompt for faster response
+    system_prompt = f"""Sen BerkAI'sın, empatik bir psikolojik destek asistanısın. 
+Kısa, öz ve destekleyici yanıtlar ver. 
 
-Kullanıcı profili: {user.name} ({user.email})
-
-Önceki konuşma:
-{conversation_context}
-"""
+Kullanıcı: {user.name}
+Son konuşmalar:
+{conversation_context}"""
     
     if video_analysis_result:
-        system_prompt += f"\n\nVideo Analiz Sonuçları:\n{video_analysis_result.get('summary', '')}"
+        system_prompt += f"\n\nDuygusal durum: {video_analysis_result.get('emotion', 'belirsiz')}, Stres: {video_analysis_result.get('stress_level', 5)}/10"
     
-    # GPT-5 Chat
+    # GPT-5 Chat with optimized settings
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
         session_id=f"berkai_{session_id}",
@@ -396,13 +388,9 @@ Kullanıcı profili: {user.name} ({user.email})
     )
     await db.messages.insert_one(ai_msg.model_dump())
     
-    # TTS disabled - frontend will use Web Speech API for client-side TTS
-    audio_url = None
-    
     return {
         "message": ai_response,
-        "video_analysis": video_analysis_result,
-        "audio_url": audio_url
+        "video_analysis": video_analysis_result
     }
 
 # ============= VIDEO ANALYSIS =============
