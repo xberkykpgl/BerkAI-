@@ -118,6 +118,32 @@ export default function Dashboard() {
           <p className="text-gray-600">Psikolojik destek seanslarınızı buradan yönetebilirsiniz</p>
         </div>
 
+        {/* Patient ID Card */}
+        <Card className="p-6 mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-purple-100 mb-1">Hasta ID Numaranız</p>
+              <div className="flex items-center gap-3">
+                <p className="text-3xl font-bold font-mono">{user?.user_id_number || 'Yükleniyor...'}</p>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(user?.user_id_number || '');
+                    toast.success('ID kopyalandı!');
+                  }}
+                  className="bg-white/20 hover:bg-white/30 text-white"
+                >
+                  Kopyala
+                </Button>
+              </div>
+              <p className="text-sm text-purple-100 mt-2">
+                👨‍⚕️ Bu ID'yi doktorunuzla paylaşın
+              </p>
+            </div>
+          </div>
+        </Card>
+
         {/* New Session Button */}
         <Card className="p-8 mb-8 bg-gradient-to-br from-teal-500 to-blue-600 text-white border-0 shadow-xl hover:shadow-2xl transition-shadow">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
