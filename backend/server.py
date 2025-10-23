@@ -394,7 +394,58 @@ async def chat_with_berkai(request: Request, session_id: str):
         role="user",
         content=user_message_text
     )
-    await db.messages.insert_one(user_msg.model_dump())
+    msg_doc = user_msg.model_dump()
+    await db.messages.insert_one(msg_doc)
+    message_id = msg_doc.get("id", user_msg.id)
+    
+    # ⚠️ RISK ASSESSMENT - Critical Feature
+    risk_result = analyze_message_risk(user_message_text)
+    
+    # Save risk assessment to database
+    risk_assessment = {
+        "id": str(uuid.uuid4()),
+        "user_id": user.id,
+        "session_id": session_id,
+        "message_id": message_id,
+        "risk_level": risk_result["risk_level"],
+        "risk_category": risk_result["risk_category"],
+        "risk_indicators": risk_result["risk_indicators"],
+        "suicide_risk": risk_result["suicide_risk"],
+        "self_harm_risk": risk_result["self_harm_risk"],
+        "crisis_detected": risk_result["crisis_detected"],
+        "doctor_notified": False,
+        "timestamp": datetime.now(timezone.utc)
+    }
+    await db.risk_assessments.insert_one(risk_assessment)
+    
+    # Notify doctor if high risk
+    if should_notify_doctor(risk_result) and user.assigned_doctor_id:
+        # Mark as notified
+        await db.risk_assessments.update_one(
+            {"id": risk_assessment["id"]},
+            {"$set": {"doctor_notified": True}}
+        )
+        # In production: Send email/SMS to doctor
+        logging.warning(f"🚨 HIGH RISK ALERT - User: {user.id}, Risk Level: {risk_result['risk_level']}")
+    
+    # If critical, return crisis response immediately
+    if risk_result["risk_category"] == "critical":
+        crisis_response = generate_crisis_response()
+        
+        # Save AI crisis response
+        ai_msg = Message(
+            session_id=session_id,
+            user_id=user.id,
+            role="assistant",
+            content=crisis_response
+        )
+        await db.messages.insert_one(ai_msg.model_dump())
+        
+        return {
+            "message": crisis_response,
+            "risk_assessment": risk_result,
+            "crisis_mode": True
+        }
     
     # Get current session history
     current_session_messages = await db.messages.find(
