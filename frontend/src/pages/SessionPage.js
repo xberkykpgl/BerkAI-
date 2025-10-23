@@ -313,7 +313,12 @@ export default function SessionPage() {
 
               <div className="space-y-3">
                 <div className="text-xs text-gray-500 flex items-center justify-between">
-                  <span>💬 Mesajınızı yazın • BerkAI sesli yanıt verir 🔊</span>
+                  <div className="flex items-center gap-2">
+                    <span>💬 Mesajınızı yazın • BerkAI sesli yanıt verir 🔊</span>
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                      💚 Sizi hatırlıyorum
+                    </span>
+                  </div>
                   {isVideoOn && (
                     <span className="text-teal-600 font-medium">📹 Video aktif</span>
                   )}
