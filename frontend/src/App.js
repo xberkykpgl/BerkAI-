@@ -105,6 +105,7 @@ function App() {
           <Route path="/" element={<UserTypeSelection />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/patient/:patientId" element={<PatientDetailPage />} />
           <Route path="/session/:sessionId" element={<SessionPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
