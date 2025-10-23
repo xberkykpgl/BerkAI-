@@ -28,6 +28,8 @@ export default function SessionPage() {
   const [isSending, setIsSending] = useState(false);
   const [analytics, setAnalytics] = useState(null);
   const [currentAnalysis, setCurrentAnalysis] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const voiceRecognitionRef = useRef(null);
 
   useEffect(() => {
     loadSession();
