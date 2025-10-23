@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Video, VideoOff, Send, Brain, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Video, VideoOff, Send, Brain, Activity, AlertCircle, CheckCircle, Mic, MicOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Textarea } from '../components/ui/textarea';
 import { toast } from 'sonner';
 import { Progress } from '../components/ui/progress';
 import { Badge } from '../components/ui/badge';
+import { VoiceRecognition } from '../utils/voiceRecognition';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
