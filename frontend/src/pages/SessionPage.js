@@ -194,7 +194,7 @@ export default function SessionPage() {
     setIsRecording(false);
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (analyzeVideo = false) => {
     if (!inputMessage.trim() || isSending) return;
 
     setIsSending(true);
@@ -214,19 +214,20 @@ export default function SessionPage() {
     const loadingMsg = {
       id: Date.now().toString() + '_loading',
       role: 'assistant',
-      content: 'BerkAI düşünüyor ve yanıt hazırlıyor...',
+      content: '💭 Yanıt hazırlanıyor...',
       timestamp: new Date().toISOString(),
       isLoading: true
     };
     setMessages(prev => [...prev, loadingMsg]);
 
     try {
-      // Capture frame if video is on
-      const frameData = isVideoOn ? captureFrame() : null;
+      // Capture frame only if video analysis requested
+      const frameData = (analyzeVideo && isVideoOn) ? captureFrame() : null;
 
       const response = await axios.post(`${API}/sessions/${sessionId}/chat`, {
         message: messageText,
-        video_frame: frameData
+        video_frame: frameData,
+        analyze_video: analyzeVideo && isVideoOn
       });
 
       // Remove loading message and add AI response
