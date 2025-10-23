@@ -123,7 +123,11 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-2xl font-bold mb-2">Yeni Seans Başlat</h3>
-              <p className="text-teal-100">BerkAI ile görüntülü terapi seanslarınıza başlayın</p>
+              <p className="text-teal-100">
+                {sessions.length > 0 
+                  ? "BerkAI sizi tanıyor - önceki seanslarınızı hatırlayacak 💚" 
+                  : "BerkAI ile görüntülü terapi seanslarınıza başlayın"}
+              </p>
             </div>
             <Button 
               size="lg"
