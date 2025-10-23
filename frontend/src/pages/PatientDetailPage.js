@@ -24,6 +24,8 @@ export default function PatientDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useState(null);
 
   useEffect(() => {
     loadPatientData();
