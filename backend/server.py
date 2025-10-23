@@ -800,7 +800,11 @@ async def add_doctor_note(request: Request, patient_id: str):
     }
     
     await db.doctor_notes.insert_one(note)
-    return {"success": True, "note": note}
+    
+    # Return serializable version
+    note_response = note.copy()
+    note_response["timestamp"] = note_response["timestamp"].isoformat()
+    return {"success": True, "note": note_response}
 
 @api_router.get("/doctor/patient/{patient_id}/notes")
 async def get_patient_notes(request: Request, patient_id: str):
