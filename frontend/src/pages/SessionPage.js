@@ -357,7 +357,7 @@ export default function SessionPage() {
               <div className="space-y-3">
                 <div className="text-xs text-gray-500 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span>💬 Mesajınızı yazın • BerkAI sesli yanıt verir 🔊</span>
+                    <span>💬 Mesajınızı yazın veya 🎤 ile konuşun • BerkAI sesli yanıt verir 🔊</span>
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                       💚 Sizi hatırlıyorum
                     </span>
@@ -371,13 +371,32 @@ export default function SessionPage() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage(false))}
-                    placeholder="Mesajınızı yazın... BerkAI sesli okuyacak 🔊"
+                    placeholder="Mesajınızı yazın veya mikrofon ile konuşun... 🔊"
                     data-testid="message-input"
                     className="resize-none flex-1"
                     rows={3}
                     disabled={isSending}
                   />
                   <div className="flex flex-col gap-2">
+                    {/* Voice Recording Button - Above Send Button */}
+                    <Button 
+                      onClick={toggleVoiceRecording}
+                      disabled={isSending}
+                      data-testid="voice-recording-button"
+                      className={`h-14 w-14 ${
+                        isRecording 
+                          ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                          : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                      }`}
+                      title={isRecording ? "Kaydı durdur" : "Sesli konuş"}
+                    >
+                      {isRecording ? (
+                        <MicOff className="w-5 h-5" />
+                      ) : (
+                        <Mic className="w-5 h-5" />
+                      )}
+                    </Button>
+
                     {/* Normal Send - Faster */}
                     <Button 
                       onClick={() => sendMessage(false)}
