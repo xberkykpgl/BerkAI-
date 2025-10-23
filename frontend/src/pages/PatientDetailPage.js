@@ -26,7 +26,7 @@ export default function PatientDetailPage() {
   const [newNote, setNewNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useState(null);
+  const voiceRecognitionRef = useRef(null);
 
   useEffect(() => {
     loadPatientData();
