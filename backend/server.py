@@ -525,7 +525,8 @@ Bu Seanstaki Konuşma:
     
     return {
         "message": ai_response,
-        "video_analysis": video_analysis_result
+        "video_analysis": video_analysis_result,
+        "risk_assessment": risk_result
     }
 
 # ============= VIDEO ANALYSIS =============
