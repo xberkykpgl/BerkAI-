@@ -690,6 +690,130 @@ async def transcribe_audio(file: UploadFile = File(...)):
         logging.error(f"Transcription error: {e}")
         raise HTTPException(status_code=500, detail="Transcription failed")
 
+# ============= DOCTOR ROUTES =============
+
+@api_router.get("/doctor/patients")
+async def get_doctor_patients(request: Request):
+    """Get all patients assigned to doctor"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    # Get assigned patients
+    patients = await db.users.find(
+        {"_id": {"$in": user.assigned_patients}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Get session counts and risk levels for each patient
+    for patient in patients:
+        session_count = await db.therapy_sessions.count_documents({"user_id": patient["id"]})
+        patient["session_count"] = session_count
+        
+        # Get latest risk assessment
+        latest_risk = await db.risk_assessments.find_one(
+            {"user_id": patient["id"]},
+            sort=[("timestamp", -1)]
+        )
+        patient["latest_risk"] = latest_risk["risk_category"] if latest_risk else "low"
+    
+    return patients
+
+@api_router.post("/doctor/add-patient")
+async def add_patient_to_doctor(request: Request):
+    """Add patient to doctor using patient ID"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    data = await request.json()
+    patient_id_number = data.get("patient_id_number")
+    
+    # Find patient by ID number
+    patient = await db.users.find_one({"user_id_number": patient_id_number})
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    if patient.get("user_type") != "patient":
+        raise HTTPException(status_code=400, detail="User is not a patient")
+    
+    # Add patient to doctor's list
+    if patient["_id"] not in user.assigned_patients:
+        await db.users.update_one(
+            {"_id": user.id},
+            {"$push": {"assigned_patients": patient["_id"]}}
+        )
+    
+    # Set doctor for patient
+    await db.users.update_one(
+        {"_id": patient["_id"]},
+        {"$set": {"assigned_doctor_id": user.id}}
+    )
+    
+    return {"success": True, "patient": patient}
+
+@api_router.get("/doctor/patient/{patient_id}/risk-alerts")
+async def get_patient_risk_alerts(request: Request, patient_id: str):
+    """Get risk assessments for a patient"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    # Verify patient is assigned to doctor
+    if patient_id not in user.assigned_patients:
+        raise HTTPException(status_code=403, detail="Patient not assigned to you")
+    
+    # Get risk assessments
+    risks = await db.risk_assessments.find(
+        {"user_id": patient_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(50).to_list(50)
+    
+    return risks
+
+@api_router.post("/doctor/patient/{patient_id}/note")
+async def add_doctor_note(request: Request, patient_id: str):
+    """Add clinical note for patient"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    if patient_id not in user.assigned_patients:
+        raise HTTPException(status_code=403, detail="Patient not assigned to you")
+    
+    data = await request.json()
+    
+    note = {
+        "id": str(uuid.uuid4()),
+        "doctor_id": user.id,
+        "patient_id": patient_id,
+        "session_id": data.get("session_id"),
+        "note_type": data.get("note_type", "clinical_note"),
+        "content": data.get("content"),
+        "tags": data.get("tags", []),
+        "timestamp": datetime.now(timezone.utc)
+    }
+    
+    await db.doctor_notes.insert_one(note)
+    return {"success": True, "note": note}
+
+@api_router.get("/doctor/patient/{patient_id}/notes")
+async def get_patient_notes(request: Request, patient_id: str):
+    """Get all notes for a patient"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    if patient_id not in user.assigned_patients:
+        raise HTTPException(status_code=403, detail="Patient not assigned to you")
+    
+    notes = await db.doctor_notes.find(
+        {"patient_id": patient_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).to_list(100)
+    
+    return notes
+
 # ============= ADMIN ROUTES =============
 
 @api_router.post("/admin/login")
