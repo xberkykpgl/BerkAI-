@@ -780,57 +780,42 @@ async def get_patient_risk_alerts(request: Request, patient_id: str):
 @api_router.post("/doctor/patient/{patient_id}/note")
 async def add_doctor_note(request: Request, patient_id: str):
     """Add clinical note for patient"""
-    try:
-        user = await get_current_user(request)
-        print(f"DEBUG: User retrieved: {user}")
-        
-        if not user or user.user_type not in ["doctor", "psychiatrist"]:
-            raise HTTPException(status_code=403, detail="Only doctors can access")
-        
-        # Convert assigned_patients to strings for comparison
-        assigned_patient_ids = [str(pid) for pid in user.assigned_patients]
-        print(f"DEBUG: Assigned patients: {assigned_patient_ids}, Looking for: {patient_id}")
-        
-        if patient_id not in assigned_patient_ids:
-            raise HTTPException(status_code=403, detail="Patient not assigned to you")
-        
-        data = await request.json()
-        print(f"DEBUG: Request data: {data}")
-        
-        note = {
-            "id": str(uuid.uuid4()),
-            "doctor_id": user.id,
-            "patient_id": patient_id,
-            "session_id": data.get("session_id"),
-            "note_type": data.get("note_type", "clinical_note"),
-            "content": data.get("content"),
-            "tags": data.get("tags", []),
-            "timestamp": datetime.now(timezone.utc)
-        }
-        
-        print(f"DEBUG: Note to insert: {note}")
-        await db.doctor_notes.insert_one(note)
-        print("DEBUG: Note inserted successfully")
-        
-        # Return serializable version (exclude MongoDB _id)
-        note_response = {
-            "id": note["id"],
-            "doctor_id": note["doctor_id"],
-            "patient_id": note["patient_id"],
-            "session_id": note["session_id"],
-            "note_type": note["note_type"],
-            "content": note["content"],
-            "tags": note["tags"],
-            "timestamp": note["timestamp"].isoformat()
-        }
-        print(f"DEBUG: Returning response: {note_response}")
-        return {"success": True, "note": note_response}
-        
-    except Exception as e:
-        print(f"DEBUG: Exception in add_doctor_note: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Only doctors can access")
+    
+    # Convert assigned_patients to strings for comparison
+    assigned_patient_ids = [str(pid) for pid in user.assigned_patients]
+    if patient_id not in assigned_patient_ids:
+        raise HTTPException(status_code=403, detail="Patient not assigned to you")
+    
+    data = await request.json()
+    
+    note = {
+        "id": str(uuid.uuid4()),
+        "doctor_id": user.id,
+        "patient_id": patient_id,
+        "session_id": data.get("session_id"),
+        "note_type": data.get("note_type", "clinical_note"),
+        "content": data.get("content"),
+        "tags": data.get("tags", []),
+        "timestamp": datetime.now(timezone.utc)
+    }
+    
+    await db.doctor_notes.insert_one(note)
+    
+    # Return serializable version (exclude MongoDB _id)
+    note_response = {
+        "id": note["id"],
+        "doctor_id": note["doctor_id"],
+        "patient_id": note["patient_id"],
+        "session_id": note["session_id"],
+        "note_type": note["note_type"],
+        "content": note["content"],
+        "tags": note["tags"],
+        "timestamp": note["timestamp"].isoformat()
+    }
+    return {"success": True, "note": note_response}
 
 @api_router.get("/doctor/patient/{patient_id}/notes")
 async def get_patient_notes(request: Request, patient_id: str):
