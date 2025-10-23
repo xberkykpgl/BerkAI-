@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage';
 import UserTypeSelection from './pages/UserTypeSelection';
 import Dashboard from './pages/Dashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
+import PatientDetailPage from './pages/PatientDetailPage';
 import SessionPage from './pages/SessionPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
