@@ -36,8 +36,34 @@ export default function SessionPage() {
     loadMessages();
     loadAnalytics();
 
+    // Initialize voice recognition
+    voiceRecognitionRef.current = new VoiceRecognition(
+      (transcript, isFinal) => {
+        // Update input message as user speaks
+        setInputMessage(transcript);
+      },
+      (error) => {
+        toast.error(error);
+        setIsRecording(false);
+      },
+      () => {
+        setIsRecording(true);
+        toast.success('🎤 Dinliyorum...');
+      },
+      (finalTranscript) => {
+        setIsRecording(false);
+        if (finalTranscript.trim()) {
+          setInputMessage(finalTranscript);
+          toast.success('✅ Ses kaydı tamamlandı');
+        }
+      }
+    );
+
     return () => {
       stopVideo();
+      if (voiceRecognitionRef.current) {
+        voiceRecognitionRef.current.stop();
+      }
     };
   }, [sessionId]);
 
