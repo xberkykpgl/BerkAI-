@@ -113,6 +113,47 @@ class AISettings(BaseModel):
     enable_tts: bool = True
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class RiskAssessment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_id: str
+    message_id: str
+    risk_level: int  # 0-10
+    risk_category: str  # low, medium, high, critical
+    risk_indicators: List[str]  # What triggered the risk
+    suicide_risk: bool = False
+    self_harm_risk: bool = False
+    crisis_detected: bool = False
+    doctor_notified: bool = False
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TreatmentPlan(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    patient_id: str
+    doctor_id: str
+    plan_title: str
+    therapy_approach: str  # CBT, DBT, ACT, etc
+    goals: List[str]
+    interventions: List[str]
+    homework: List[str]
+    notes: str
+    status: str = "active"  # active, completed, paused
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DoctorNote(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    doctor_id: str
+    patient_id: str
+    session_id: Optional[str] = None
+    note_type: str  # clinical_note, observation, diagnosis
+    content: str
+    tags: List[str] = []
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============= AUTH HELPERS =============
 
 # Admin credentials from environment
