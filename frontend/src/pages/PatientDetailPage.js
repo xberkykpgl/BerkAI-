@@ -79,6 +79,74 @@ export default function PatientDetailPage() {
     }
   };
 
+  const handleVoiceNote = () => {
+    if (isRecording) {
+      // Stop recording
+      if (recognitionRef[0]) {
+        recognitionRef[0].stop();
+      }
+      setIsRecording(false);
+      return;
+    }
+
+    // Start recording
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast.error('Tarayıcınız ses tanımayı desteklemiyor');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'tr-TR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+        toast.success('🎤 Dinliyorum - not alıyorum...', { duration: 10000 });
+      };
+
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          }
+        }
+        
+        if (finalTranscript) {
+          setNewNote(prev => prev + finalTranscript);
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        
+        if (event.error === 'no-speech') {
+          toast.error('Ses algılanamadı');
+        } else if (event.error !== 'aborted') {
+          toast.error('Ses tanıma hatası. Metin olarak yazabilirsiniz.');
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognitionRef[0] = recognition;
+      recognition.start();
+      
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+      toast.error('Ses tanıma başlatılamadı');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
