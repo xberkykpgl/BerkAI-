@@ -27,15 +27,15 @@ print('User ID: ' + userId);
 ## Step 2: Test Backend API
 ```bash
 # Test auth endpoint
-curl -X GET "https://berkaihealth.preview.emergentagent.com/api/auth/me" \
+curl -X GET "https://berkai-companion.preview.emergentagent.com/api/auth/me" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 
 # Test sessions
-curl -X GET "https://berkaihealth.preview.emergentagent.com/api/sessions" \
+curl -X GET "https://berkai-companion.preview.emergentagent.com/api/sessions" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 
 # Create session
-curl -X POST "https://berkaihealth.preview.emergentagent.com/api/sessions?session_name=Test%20Session" \
+curl -X POST "https://berkai-companion.preview.emergentagent.com/api/sessions?session_name=Test%20Session" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 ```
 

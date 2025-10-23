@@ -1,0 +1,91 @@
+<analysis>
+The AI engineer successfully developed BerkAI, a psychological support AI, from initial concept to a professional-grade platform. The process involved implementing a FastAPI backend and React frontend with MongoDB, integrating LLMs (Gemini Pro) and vision models for multimodal analysis (though video analysis was made optional for speed). Key challenges included stabilizing voice input due to external LLM key limitations and persistent network errors, leading to a pivot from complex external APIs to client-side Web Speech API, and ultimately restricting patient voice input to text while retaining AI voice output. The application expanded to include a comprehensive admin panel, session memory for personalized interactions, and a significant feature set for professionals, introducing user roles, patient management, risk assessment, and doctor-specific voice notes. The current focus is on re-introducing stable voice input for patients.
+</analysis>
+
+<product_requirements>
+The user requested BerkAI, an AI for psychological and psychiatric support, acting as both a friend and a psychologist.
+**Core Functionality:**
+*   AI asks detailed follow-up questions based on user responses.
+*   **Multimodal Analysis:** Initially, video analysis (body language, gestures, eye movements, tone of voice) for deception detection. This feature was made optional for performance.
+*   **LLM Integration:** Hybrid use of GPT-5 and Gemini Pro, with Gemini Vision for visual analysis. The  is used for this.
+*   **Authentication:** Google and Apple account login.
+*   **Voice Interaction:** Originally, user voice input and AI voice output. Due to persistent network errors with client-side Speech-to-Text (STT), user input was reverted to text, but AI voice output via Web Speech API (Text-to-Speech) is functional. A separate, reliable voice note feature was implemented for doctors.
+*   **Admin Panel:** Comprehensive management panel to control users, sessions, and general settings. Includes viewing individual user chat histories.
+*   **Session Memory:** AI retains information from previous user sessions for personalized therapy across new sessions.
+*   **Professional Features:**
+    *   Distinct user roles for Doctors/Psychiatrists and Patients.
+    *   Unique ID numbers for all users; doctors can link and manage patients.
+    *   Integrated Risk Assessment during sessions.
+    *   Doctor Dashboard for patient management (adding, viewing detailed profiles, sessions, clinical notes, and voice notes).
+*   **Performance:** Faster AI response times, with video analysis being an optional feature to mitigate latency.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-stack Architecture**: FastAPI (Backend), React (Frontend), MongoDB (Database).
+-   **AI/LLM Integration**: Gemini Pro (text), Gemini Vision (video analysis), Web Speech API (client-side Speech-to-Text & Text-to-Speech).
+-   **Containerization**: Kubernetes environment.
+-   **UI Framework**: Shadcn UI (React components), Tailwind CSS.
+-   **Authentication**: Emergent Auth (external service), Google/Apple login.
+-   **Data Models**: Pydantic for FastAPI data validation.
+-   **Service Management**: Supervisor for backend/frontend processes.
+</key_technical_concepts>
+
+<code_architecture>
+The application utilizes a full-stack architecture consisting of a FastAPI backend, a React frontend, and a MongoDB database.
+
+
+
+**Key Files and Changes:**
+
+*   **/app/backend/server.py**:
+    *   **Importance**: Central FastAPI application with all API routes, database logic, and business rules.
+    *   **Changes**: Implemented core auth, chat, and initial video analysis. Integrated Gemini LLM and vision, added audio serving for TTS. Developed admin and doctor-specific routes (e.g., patient management, risk assessment, audio notes). Refined  for session memory and optional video analysis. Handled environment variable loading for sensitive data.
+*   **/app/backend/risk_assessment.py**:
+    *   **Importance**: Module for AI-driven risk assessment logic.
+    *   **Changes**: Created to perform contextual risk analysis on chat content.
+*   **/app/backend/.env**:
+    *   **Importance**: Stores backend environment variables.
+    *   **Changes**: Added , , , and .
+*   **/app/frontend/src/App.js**:
+    *   **Importance**: Handles global routing and authentication, defining page access.
+    *   **Changes**: Configured routes for user-facing, admin, and doctor pages. Implemented user role-based redirection post-authentication.
+*   **/app/frontend/src/pages/Dashboard.js**:
+    *   **Importance**: Patient's main view of their sessions.
+    *   **Changes**: Displays the user's unique ID and indicates if previous session data is being used with a Geçmiş badge.
+*   **/app/frontend/src/pages/SessionPage.js**:
+    *   **Importance**: The primary patient-AI interaction interface.
+    *   **Changes**: Implements video stream capture, displays analysis, and features client-side TTS for AI responses. Voice input capability was removed due to stability issues; now uses text input. UI includes options for message submission with or without video analysis.
+*   **/app/frontend/src/pages/AdminLogin.js**:
+    *   **Importance**: Dedicated login page for administrators.
+    *   **Changes**: New file for admin authentication.
+*   **/app/frontend/src/pages/AdminDashboard.js**:
+    *   **Importance**: Overview and management dashboard for administrators.
+    *   **Changes**: New file that aggregates admin functionalities.
+*   **/app/frontend/src/components/admin/**:
+    *   **Importance**: Directory for admin-specific UI components.
+    *   **Changes**: Created, containing  (now displays chat history), , and .
+*   **/app/frontend/src/pages/UserTypeSelection.js**:
+    *   **Importance**: Allows users to choose their role (patient/doctor) after initial authentication.
+    *   **Changes**: New file to facilitate role-based navigation.
+*   **/app/frontend/src/pages/DoctorDashboard.js**:
+    *   **Importance**: Dashboard for doctors to view and manage their linked patients.
+    *   **Changes**: New file for professional patient oversight.
+*   **/app/frontend/src/pages/PatientDetailPage.js**:
+    *   **Importance**: Provides a detailed view of a specific patient's information, sessions, and includes doctor-specific voice notes.
+    *   **Changes**: New file, designed for doctors to manage individual patient records, including a robust voice note input via .
+*   **/app/frontend/src/utils/voiceRecognition.js**:
+    *   **Importance**: A helper module abstracting client-side speech recognition logic.
+    *   **Changes**: Created to provide a reliable, reusable voice-to-text solution, currently used for doctor notes.
+</code_architecture>
+
+<pending_tasks>
+-   **Implement Patient Voice Input**: Integrate speech-to-text functionality for patients in  using the existing  helper.
+</pending_tasks>
+
+<current_work>
+Immediately before this summary request, the AI engineer was addressing the user's explicit request to re-enable voice communication for patients in the main chat interface, . This task aims to integrate a stable, error-free voice input capability, building upon the  helper that was successfully implemented for doctor's clinical voice notes in . Previous attempts at patient voice input faced persistent network errors with the Web Speech API and limitations with external LLM keys, leading to its temporary removal from  in favor of text input only, while retaining AI voice output (TTS). The current work explicitly states the intent to reuse the reliable  helper for this purpose.
+</current_work>
+
+<optional_next_step>
+Integrate the  helper into  to enable speech-to-text input for patients.
+</optional_next_step>

@@ -53,7 +53,7 @@ if result.returncode == 0:
     print("✅ Debug users created")
     
     # Test the clinical note endpoint
-    url = f"https://berkaihealth.preview.emergentagent.com/api/doctor/patient/{patient_id}/note"
+    url = f"https://berkai-companion.preview.emergentagent.com/api/doctor/patient/{patient_id}/note"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {doctor_token}'
