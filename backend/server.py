@@ -339,40 +339,67 @@ async def chat_with_berkai(request: Request, session_id: str):
     )
     await db.messages.insert_one(user_msg.model_dump())
     
-    # Get conversation history (last 10 messages for context)
-    history = await db.messages.find(
+    # Get current session history
+    current_session_messages = await db.messages.find(
         {"session_id": session_id, "user_id": user.id},
         {"_id": 0}
     ).sort("timestamp", 1).limit(10).to_list(10)
+    
+    # Get user's previous sessions summary (kullanıcının geçmiş bilgileri)
+    previous_sessions = await db.therapy_sessions.find(
+        {"user_id": user.id, "id": {"$ne": session_id}},
+        {"_id": 0}
+    ).sort("started_at", -1).limit(3).to_list(3)  # Son 3 seans
+    
+    # Get key messages from previous sessions
+    user_history_context = ""
+    if previous_sessions:
+        for prev_session in previous_sessions:
+            # Get last few important messages from each previous session
+            prev_messages = await db.messages.find(
+                {"session_id": prev_session["id"], "user_id": user.id, "role": "user"},
+                {"_id": 0, "content": 1, "timestamp": 1}
+            ).sort("timestamp", -1).limit(3).to_list(3)
+            
+            if prev_messages:
+                session_date = prev_session["started_at"].strftime("%d.%m.%Y")
+                user_history_context += f"\n[{session_date}] "
+                user_topics = [msg["content"][:100] for msg in prev_messages]
+                user_history_context += " | ".join(user_topics)
     
     # Video analysis only if requested and frame provided
     video_analysis_result = None
     if analyze_video and video_frame:
         video_analysis_result = await analyze_video_frame(video_frame, user.id, session_id)
     
-    # Build concise context for faster response
+    # Build current conversation context
     context_messages = []
-    for msg in history[-6:]:  # Reduced to last 6 messages
+    for msg in current_session_messages[-6:]:
         role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
-        context_messages.append(f"{role}: {msg['content'][:200]}")  # Limit length
+        context_messages.append(f"{role}: {msg['content'][:200]}")
     
-    conversation_context = "\n".join(context_messages)
+    current_conversation = "\n".join(context_messages)
     
-    # Optimized system prompt for faster response
-    system_prompt = f"""Sen BerkAI'sın, empatik bir psikolojik destek asistanısın. 
-Kısa, öz ve destekleyici yanıtlar ver. 
+    # Enhanced system prompt with user history
+    system_prompt = f"""Sen BerkAI'sın, empatik bir psikolojik destek asistanısın.
 
 Kullanıcı: {user.name}
-Son konuşmalar:
-{conversation_context}"""
+
+Kullanıcının Önceki Seanslarından Bilgiler:
+{user_history_context if user_history_context else "İlk seans - önceki geçmiş yok"}
+
+Bu Seanstaki Konuşma:
+{current_conversation}
+
+Önceki seansları dikkate alarak, kullanıcıyı tanıyormuş gibi davran. Önceki konuşmaları hatırla ve süreklilik sağla. Kısa, öz ve destekleyici yanıtlar ver."""
     
     if video_analysis_result:
-        system_prompt += f"\n\nDuygusal durum: {video_analysis_result.get('emotion', 'belirsiz')}, Stres: {video_analysis_result.get('stress_level', 5)}/10"
+        system_prompt += f"\n\nŞu anki duygusal durum: {video_analysis_result.get('emotion', 'belirsiz')}, Stres: {video_analysis_result.get('stress_level', 5)}/10"
     
-    # GPT-5 Chat with optimized settings
+    # GPT-5 Chat with user history context
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
-        session_id=f"berkai_{session_id}",
+        session_id=f"berkai_{user.id}",  # User bazlı session ID - tüm seanslar aynı context
         system_message=system_prompt
     ).with_model("openai", "gpt-5")
     
