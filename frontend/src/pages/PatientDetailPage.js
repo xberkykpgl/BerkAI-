@@ -303,22 +303,58 @@ export default function PatientDetailPage() {
             <div className="space-y-6">
               {/* Add New Note */}
               <Card className="p-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                <h3 className="text-lg font-semibold mb-4">Yeni Not Ekle</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Yeni Not Ekle</h3>
+                  <Button
+                    onClick={handleVoiceNote}
+                    variant="secondary"
+                    size="sm"
+                    className={`${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-white/20 hover:bg-white/30'} text-white`}
+                  >
+                    {isRecording ? (
+                      <>
+                        <MicOff className="w-4 h-4 mr-2" />
+                        Durdur
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4 mr-2" />
+                        Sesli Not
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {isRecording && (
+                  <div className="mb-3 text-sm bg-white/10 p-2 rounded animate-pulse">
+                    🎤 Dinliyorum... Konuşun
+                  </div>
+                )}
                 <Textarea
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
-                  placeholder="Klinik notunuzu buraya yazın..."
-                  rows={4}
+                  placeholder="Klinik notunuzu buraya yazın veya sesli kaydedin..."
+                  rows={6}
                   className="bg-white/20 text-white placeholder:text-white/60 border-white/30"
                 />
-                <Button
-                  onClick={handleSaveNote}
-                  disabled={savingNote}
-                  className="mt-4 bg-white text-purple-600 hover:bg-gray-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {savingNote ? 'Kaydediliyor...' : 'Not Ekle'}
-                </Button>
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    onClick={handleSaveNote}
+                    disabled={savingNote || !newNote.trim()}
+                    className="flex-1 bg-white text-purple-600 hover:bg-gray-50"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    {savingNote ? 'Kaydediliyor...' : 'Not Ekle'}
+                  </Button>
+                  {newNote.trim() && (
+                    <Button
+                      onClick={() => setNewNote('')}
+                      variant="secondary"
+                      className="bg-white/20 hover:bg-white/30 text-white"
+                    >
+                      Temizle
+                    </Button>
+                  )}
+                </div>
               </Card>
 
               {/* Notes List */}
