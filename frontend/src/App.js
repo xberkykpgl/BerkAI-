@@ -28,19 +28,26 @@ function AuthHandler() {
       const hash = window.location.hash;
       if (hash.includes('session_id=')) {
         const sessionId = hash.split('session_id=')[1].split('&')[0];
+        const pendingUserType = sessionStorage.getItem('pending_user_type') || 'patient';
         
         try {
           // Exchange session_id for session_token
           const response = await axios.post(`${API}/auth/session`, {
-            session_id: sessionId
+            session_id: sessionId,
+            user_type: pendingUserType
           });
           
           if (response.data.success) {
             // Clean URL
             window.history.replaceState({}, document.title, window.location.pathname);
+            sessionStorage.removeItem('pending_user_type');
             
-            // Redirect to dashboard
-            navigate('/dashboard');
+            // Redirect based on user type
+            if (response.data.user_type === 'doctor' || response.data.user_type === 'psychiatrist') {
+              navigate('/doctor/dashboard');
+            } else {
+              navigate('/dashboard');
+            }
             return;
           }
         } catch (error) {
