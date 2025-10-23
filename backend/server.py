@@ -816,7 +816,8 @@ async def get_patient_notes(request: Request, patient_id: str):
     if not user or user.user_type not in ["doctor", "psychiatrist"]:
         raise HTTPException(status_code=403, detail="Only doctors can access")
     
-    if patient_id not in user.assigned_patients:
+    assigned_patient_ids = [str(pid) for pid in user.assigned_patients]
+    if patient_id not in assigned_patient_ids:
         raise HTTPException(status_code=403, detail="Patient not assigned to you")
     
     notes = await db.doctor_notes.find(
