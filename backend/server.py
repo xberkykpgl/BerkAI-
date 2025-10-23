@@ -783,7 +783,9 @@ async def add_doctor_note(request: Request, patient_id: str):
     if not user or user.user_type not in ["doctor", "psychiatrist"]:
         raise HTTPException(status_code=403, detail="Only doctors can access")
     
-    if patient_id not in user.assigned_patients:
+    # Convert assigned_patients to strings for comparison
+    assigned_patient_ids = [str(pid) for pid in user.assigned_patients]
+    if patient_id not in assigned_patient_ids:
         raise HTTPException(status_code=403, detail="Patient not assigned to you")
     
     data = await request.json()
