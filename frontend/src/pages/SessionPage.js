@@ -232,6 +232,20 @@ export default function SessionPage() {
     }
   };
 
+  const toggleVoiceRecording = () => {
+    if (!voiceRecognitionRef.current) return;
+
+    if (isRecording) {
+      voiceRecognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      const started = voiceRecognitionRef.current.start();
+      if (!started) {
+        toast.error('Ses tanıma başlatılamadı. Lütfen Chrome veya Edge kullanın.');
+      }
+    }
+  };
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-teal-50">
