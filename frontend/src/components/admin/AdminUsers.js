@@ -120,13 +120,29 @@ export default function AdminUsers() {
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-3">Son Mesajlar</h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <h4 className="font-semibold text-white mb-3 flex items-center justify-between">
+                  <span>Tüm Mesajlar ({userDetail.recent_messages.length})</span>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => {
+                      const allMessages = userDetail.recent_messages.map(m => 
+                        `[${new Date(m.timestamp).toLocaleString('tr-TR')}] ${m.role === 'user' ? 'Kullanıcı' : 'BerkAI'}: ${m.content}`
+                      ).join('\n\n');
+                      navigator.clipboard.writeText(allMessages);
+                      toast.success('Mesajlar kopyalandı!');
+                    }}
+                    className="text-xs"
+                  >
+                    Kopyala
+                  </Button>
+                </h4>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
                   {userDetail.recent_messages.map(msg => (
-                    <div key={msg.id} className="p-3 bg-white/5 rounded-lg">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className={`text-xs font-medium ${
-                          msg.role === 'user' ? 'text-blue-300' : 'text-purple-300'
+                    <div key={msg.id} className="p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${
+                          msg.role === 'user' ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'
                         }`}>
                           {msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}
                         </span>
@@ -134,7 +150,16 @@ export default function AdminUsers() {
                           {new Date(msg.timestamp).toLocaleString('tr-TR')}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-300">{msg.content.substring(0, 150)}...</p>
+                      <p className="text-sm text-gray-300 whitespace-pre-wrap">{msg.content}</p>
+                      {msg.video_analysis && (
+                        <div className="mt-2 pt-2 border-t border-white/10">
+                          <p className="text-xs text-gray-400">Video Analizi:</p>
+                          <div className="text-xs text-gray-300 mt-1">
+                            <span className="mr-3">Duygu: {msg.video_analysis.emotion}</span>
+                            <span>Stres: {msg.video_analysis.stress_level}/10</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
