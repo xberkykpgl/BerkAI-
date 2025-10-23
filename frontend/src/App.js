@@ -61,7 +61,12 @@ function AuthHandler() {
         setUser(response.data);
         
         if (location.pathname === '/') {
-          navigate('/dashboard');
+          // Redirect based on user type
+          if (response.data.user_type === 'doctor' || response.data.user_type === 'psychiatrist') {
+            navigate('/doctor/dashboard');
+          } else {
+            navigate('/dashboard');
+          }
         }
       } catch (error) {
         setUser(null);
