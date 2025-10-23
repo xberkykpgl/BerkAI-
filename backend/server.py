@@ -43,6 +43,13 @@ class User(BaseModel):
     email: str
     name: str
     picture: Optional[str] = None
+    user_type: str = "patient"  # patient, doctor, psychiatrist
+    user_id_number: str = ""  # Unique ID for linking
+    license_number: Optional[str] = None  # For doctors/psychiatrists
+    specialization: Optional[str] = None  # For doctors/psychiatrists
+    assigned_patients: List[str] = []  # Patient IDs for doctors
+    assigned_doctor_id: Optional[str] = None  # For patients
+    therapy_approach: str = "general"  # CBT, DBT, ACT, general
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserSession(BaseModel):
