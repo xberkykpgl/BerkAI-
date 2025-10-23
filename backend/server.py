@@ -682,7 +682,7 @@ async def get_user_detail(request: Request, user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     
     sessions = await db.therapy_sessions.find({"user_id": user_id}).sort("started_at", -1).to_list(100)
-    messages = await db.messages.find({"user_id": user_id}).sort("timestamp", -1).limit(50).to_list(50)
+    messages = await db.messages.find({"user_id": user_id}, {"_id": 0}).sort("timestamp", -1).to_list(500)  # Increased to 500
     
     user["id"] = user.pop("_id")
     
