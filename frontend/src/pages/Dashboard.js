@@ -94,7 +94,7 @@ export default function Dashboard() {
                 </Avatar>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-gray-500">ID: {user?.user_id_number || 'Yükleniyor...'}</p>
                 </div>
               </div>
               <Button 
