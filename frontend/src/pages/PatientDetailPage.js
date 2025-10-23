@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, AlertTriangle, FileText, Plus, Activity, Video, Calendar, TrendingUp, Mic, MicOff } from 'lucide-react';
