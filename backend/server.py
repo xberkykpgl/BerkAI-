@@ -219,6 +219,7 @@ async def create_session_from_emergent(request: Request, response: Response):
     """Process session_id from Emergent Auth and create user session"""
     data = await request.json()
     session_id = data.get("session_id")
+    user_type = data.get("user_type", "patient")  # patient, doctor, psychiatrist
     
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id required")
@@ -239,12 +240,19 @@ async def create_session_from_emergent(request: Request, response: Response):
     existing_user = await db.users.find_one({"_id": user_data["email"]})
     
     if not existing_user:
+        # Generate unique ID
+        user_id_number = f"BRK{uuid.uuid4().hex[:8].upper()}"
+        
         # Create new user
         user_doc = {
             "_id": user_data["email"],
             "email": user_data["email"],
             "name": user_data["name"],
             "picture": user_data.get("picture"),
+            "user_type": user_type,
+            "user_id_number": user_id_number,
+            "assigned_patients": [],
+            "therapy_approach": "general",
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(user_doc)
@@ -271,7 +279,7 @@ async def create_session_from_emergent(request: Request, response: Response):
         path="/"
     )
     
-    return {"success": True, "user": user_data}
+    return {"success": True, "user": user_data, "user_type": user_type}
 
 @api_router.post("/auth/logout")
 async def logout(request: Request, response: Response):
