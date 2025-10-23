@@ -313,10 +313,7 @@ export default function SessionPage() {
 
               <div className="space-y-3">
                 <div className="text-xs text-gray-500 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mic className="w-3 h-3" />
-                    <span>Mikrofon ile konuşun veya metin yazın • BerkAI sesli yanıt verir</span>
-                  </div>
+                  <span>💬 Mesajınızı yazın • BerkAI sesli yanıt verir 🔊</span>
                   {isVideoOn && (
                     <span className="text-teal-600 font-medium">📹 Video aktif</span>
                   )}
@@ -326,34 +323,22 @@ export default function SessionPage() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage(false))}
-                    placeholder="Mesajınızı yazın veya mikrofona basıp konuşun..."
+                    placeholder="Mesajınızı yazın... BerkAI sesli okuyacak 🔊"
                     data-testid="message-input"
                     className="resize-none flex-1"
                     rows={3}
                     disabled={isSending}
                   />
                   <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={isRecording ? stopRecording : startRecording}
-                      data-testid="toggle-mic-button"
-                      variant={isRecording ? 'destructive' : 'outline'}
-                      size="icon"
-                      className="h-10 w-12"
-                      title="Sesli mesaj kaydet"
-                    >
-                      {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    </Button>
-                    
                     {/* Normal Send - Faster */}
                     <Button 
                       onClick={() => sendMessage(false)}
                       disabled={!inputMessage.trim() || isSending}
                       data-testid="send-message-button"
-                      size="icon"
-                      className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 h-10 w-12"
-                      title="Hızlı gönder (video analizi yok)"
+                      className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 h-14 w-14"
+                      title="Hızlı gönder"
                     >
-                      <Send className="w-4 h-4" />
+                      <Send className="w-5 h-5" />
                     </Button>
 
                     {/* Send with Video Analysis - Slower but detailed */}
@@ -362,12 +347,11 @@ export default function SessionPage() {
                         onClick={() => sendMessage(true)}
                         disabled={!inputMessage.trim() || isSending}
                         data-testid="send-with-analysis-button"
-                        size="icon"
                         variant="outline"
-                        className="h-10 w-12 border-purple-500 text-purple-500 hover:bg-purple-500/10"
-                        title="Video analizi ile gönder (daha yavaş ama detaylı)"
+                        className="h-14 w-14 border-purple-500 text-purple-500 hover:bg-purple-500/10"
+                        title="Video analizi ile gönder (daha detaylı)"
                       >
-                        <Video className="w-4 h-4" />
+                        <Video className="w-5 h-5" />
                       </Button>
                     )}
                   </div>
