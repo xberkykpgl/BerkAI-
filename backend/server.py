@@ -701,21 +701,26 @@ async def get_doctor_patients(request: Request):
     
     # Get assigned patients
     patients = await db.users.find(
-        {"_id": {"$in": user.assigned_patients}},
-        {"_id": 0}
+        {"_id": {"$in": user.assigned_patients}}
     ).to_list(100)
     
     # Get session counts and risk levels for each patient
     for patient in patients:
-        session_count = await db.therapy_sessions.count_documents({"user_id": patient["id"]})
+        patient_id = patient["_id"]
+        patient["id"] = patient_id  # Add id field for consistency
+        
+        session_count = await db.therapy_sessions.count_documents({"user_id": patient_id})
         patient["session_count"] = session_count
         
         # Get latest risk assessment
         latest_risk = await db.risk_assessments.find_one(
-            {"user_id": patient["id"]},
+            {"user_id": patient_id},
             sort=[("timestamp", -1)]
         )
         patient["latest_risk"] = latest_risk["risk_category"] if latest_risk else "low"
+        
+        # Remove _id to avoid serialization issues
+        patient.pop("_id", None)
     
     return patients
 
