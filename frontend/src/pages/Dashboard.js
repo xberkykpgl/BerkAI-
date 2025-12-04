@@ -164,18 +164,68 @@ export default function Dashboard() {
                   Bugün nasıl hissediyorsun? Seninle konuşmaya hazırım.
                 </p>
               </div>
-              <Button 
-                onClick={createNewSession}
-                size="lg"
-                className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Yeni Seans Başlat
-                <Sparkles className="w-5 h-5 ml-2" />
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={loadDoctors}
+                  size="lg"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 px-6 py-6 rounded-full"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Psikolog ile Görüş
+                </Button>
+                <Button 
+                  onClick={createNewSession}
+                  size="lg"
+                  className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 text-white px-8 py-6 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Yeni AI Seans
+                </Button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Session Requests Status */}
+        {sessionRequests.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-orange-400" />
+              Psikolog Seans Taleplerim
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {sessionRequests.map((req) => (
+                <div key={req.id} className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 border border-white/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <img src={req.doctor_picture || 'https://via.placeholder.com/40'} className="w-10 h-10 rounded-full" alt="" />
+                      <div>
+                        <p className="text-white font-medium">{req.doctor_name}</p>
+                        <p className="text-xs text-gray-400">{req.doctor_specialization}</p>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      req.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' :
+                      req.status === 'accepted' ? 'bg-green-500/20 text-green-300' :
+                      'bg-red-500/20 text-red-300'
+                    }`}>
+                      {req.status === 'pending' ? 'Bekliyor' : req.status === 'accepted' ? 'Kabul Edildi' : 'Reddedildi'}
+                    </span>
+                  </div>
+                  {req.response_message && (
+                    <p className="text-sm text-gray-300 mt-2">"{req.response_message}"</p>
+                  )}
+                  {req.status === 'accepted' && req.video_call_url && (
+                    <Button className="w-full mt-3 bg-gradient-to-r from-green-500 to-teal-500">
+                      Video Seansa Katıl
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Sessions */}
         <div className="mb-8">
