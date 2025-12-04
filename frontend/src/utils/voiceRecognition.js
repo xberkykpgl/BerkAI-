@@ -2,7 +2,7 @@
 // Handles all edge cases and provides fallbacks
 
 export class VoiceRecognition {
-  constructor(onResult, onError, onStart, onEnd) {
+  constructor(onResult, onError, onStart, onEnd, options = {}) {
     this.onResult = onResult;
     this.onError = onError;
     this.onStart = onStart;
@@ -10,6 +10,13 @@ export class VoiceRecognition {
     this.recognition = null;
     this.isRecording = false;
     this.finalTranscript = '';
+    this.shouldContinue = false;
+    this.restartTimeout = null;
+    this.networkErrorCount = 0;
+    this.maxNetworkErrors = 3;
+    
+    // Options: continuous mode (default false for better network stability)
+    this.continuous = options.continuous !== undefined ? options.continuous : false;
   }
 
   isSupported() {
