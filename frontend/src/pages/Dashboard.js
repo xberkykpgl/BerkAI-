@@ -26,13 +26,15 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [userRes, sessionsRes] = await Promise.all([
+      const [userRes, sessionsRes, requestsRes] = await Promise.all([
         axios.get(`${API}/auth/me`),
-        axios.get(`${API}/sessions`)
+        axios.get(`${API}/sessions`),
+        axios.get(`${API}/session-requests/my-requests`)
       ]);
       
       setUser(userRes.data);
       setSessions(sessionsRes.data);
+      setSessionRequests(requestsRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
       if (error.response?.status === 401) {
