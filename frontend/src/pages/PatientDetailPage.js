@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, AlertTriangle, FileText, Plus, Activity, Video, Calendar, TrendingUp, Mic, MicOff } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, FileText, Plus, Activity, Video, Calendar, TrendingUp, Mic, MicOff, Brain } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
