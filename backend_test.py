@@ -200,40 +200,110 @@ class BerkAIRAGMemoryTester:
         
         return session_id
 
-    def test_message_endpoints(self):
-        """Test messaging and chat endpoints"""
-        print("\n💬 Testing Chat & Messaging...")
+    def test_multi_session_memory(self):
+        """Test Multi-Session Memory System"""
+        print("\n🔗 Testing Multi-Session Memory...")
         
-        if not self.test_session_id:
-            print("⚠️ Skipping message tests - no session ID")
-            return
-        
-        # Get session messages (should be empty initially)
-        self.run_api_test(
-            "Get session messages",
-            "GET",
-            f"sessions/{self.test_session_id}/messages",
+        # First session already created in previous test (work stress)
+        # Create second session for relationship issues
+        success, session_data = self.run_api_test(
+            "Create relationship session",
+            "POST",
+            "sessions?session_name=Relationship Issues Session",
             200
         )
         
-        # Send chat message (this will test GPT-5 integration)
-        print("🤖 Testing GPT-5 integration...")
-        success, response = self.run_api_test(
-            "Send chat message",
-            "POST",
-            f"sessions/{self.test_session_id}/chat",
+        if not success or 'id' not in session_data:
+            self.log_test("Second session creation", False, "Failed to create relationship session")
+            return
+        
+        relationship_session_id = session_data['id']
+        self.test_sessions.append(relationship_session_id)
+        print(f"💕 Created relationship session: {relationship_session_id}")
+        
+        # Have conversation about relationship issues
+        relationship_messages = [
+            "Şimdi de ilişki problemlerimden bahsetmek istiyorum.",
+            "Partnerimle iletişim kurmakta zorlanıyorum.",
+            "O beni anlamıyor, ben de onu anlayamıyorum.",
+            "Sürekli tartışıyoruz ve bu beni çok üzüyor.",
+            "Bu durumu nasıl çözebiliriz?"
+        ]
+        
+        print("💬 Simulating relationship conversation...")
+        for i, message in enumerate(relationship_messages):
+            success, response = self.run_api_test(
+                f"Relationship message {i+1}",
+                "POST",
+                f"sessions/{relationship_session_id}/chat",
+                200,
+                data={"message": message}
+            )
+            
+            if success and 'message' in response:
+                print(f"  User: {message[:50]}...")
+                print(f"  AI: {response['message'][:80]}...")
+            
+            time.sleep(1)
+        
+        # Complete relationship session
+        print("🔄 Completing relationship session...")
+        success, complete_response = self.run_api_test(
+            "Complete relationship session",
+            "PATCH",
+            f"sessions/{relationship_session_id}/complete",
             200,
-            data={
-                "message": "Merhaba, nasılsın? Bu bir test mesajıdır.",
-                "video_frame": None
-            }
+            data={"analysis_summary": {"topic": "relationship_issues"}}
         )
         
-        if success:
-            if 'message' in response and response['message']:
-                print(f"✅ GPT-5 Response received: {response['message'][:100]}...")
+        if success and complete_response.get('summary_generated'):
+            self.verify_user_profile_summary(relationship_session_id, "relationship")
+        
+        # Create third session to test memory recall
+        success, session_data = self.run_api_test(
+            "Create memory test session",
+            "POST",
+            "sessions?session_name=Memory Test Session",
+            200
+        )
+        
+        if not success or 'id' not in session_data:
+            self.log_test("Memory test session creation", False, "Failed to create memory test session")
+            return
+        
+        memory_test_session_id = session_data['id']
+        self.test_sessions.append(memory_test_session_id)
+        print(f"🧠 Created memory test session: {memory_test_session_id}")
+        
+        # Ask about previous conversations
+        print("🔍 Testing memory recall...")
+        success, response = self.run_api_test(
+            "Memory recall test",
+            "POST",
+            f"sessions/{memory_test_session_id}/chat",
+            200,
+            data={"message": "Daha önce neler konuştuk? Geçmiş seanslarımızda hangi konuları ele aldık?"}
+        )
+        
+        if success and 'message' in response:
+            ai_response = response['message'].lower()
+            print(f"🤖 AI Memory Response: {response['message'][:200]}...")
+            
+            # Check if AI remembers both work and relationship topics
+            work_keywords = ['iş', 'stres', 'patron', 'mesai', 'çalış']
+            relationship_keywords = ['ilişki', 'partner', 'tartış', 'iletişim']
+            
+            work_mentioned = any(keyword in ai_response for keyword in work_keywords)
+            relationship_mentioned = any(keyword in ai_response for keyword in relationship_keywords)
+            
+            if work_mentioned and relationship_mentioned:
+                self.log_test("Multi-session memory recall", True, "AI remembered both work and relationship topics")
+            elif work_mentioned or relationship_mentioned:
+                self.log_test("Multi-session memory recall", False, f"AI only remembered {'work' if work_mentioned else 'relationship'} topics")
             else:
-                self.log_test("GPT-5 response content", False, "No message in response")
+                self.log_test("Multi-session memory recall", False, "AI did not recall previous session topics")
+        
+        return memory_test_session_id
 
     def test_video_analysis(self):
         """Test video analysis with Gemini"""
