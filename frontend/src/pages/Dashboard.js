@@ -15,6 +15,10 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [sessionRequests, setSessionRequests] = useState([]);
 
   useEffect(() => {
     loadData();
