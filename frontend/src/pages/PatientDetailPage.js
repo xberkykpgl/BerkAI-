@@ -43,13 +43,14 @@ export default function PatientDetailPage() {
 
       setPatient(patientRes.data.user);
       setSessions(patientRes.data.sessions);
-      setMessages(patientRes.data.recent_messages);
+      setMessages(patientRes.data.all_messages || patientRes.data.recent_messages);
+      setProfile(patientRes.data.profile);
       setRiskAlerts(riskRes.data);
       setNotes(notesRes.data);
     } catch (error) {
       console.error('Error loading patient data:', error);
       if (error.response?.status === 403) {
-        toast.error('Bu hastaya erişim yetkiniz yok');
+        toast.error('Bu danışana erişim yetkiniz yok');
         navigate('/doctor/dashboard');
       }
     } finally {
