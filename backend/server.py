@@ -92,6 +92,19 @@ class VideoAnalysis(BaseModel):
     emotion_detected: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class UserProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    main_issues: List[str] = []  # Ana sorunlar
+    progress_notes: List[Dict[str, Any]] = []  # İlerleme notları
+    important_events: List[Dict[str, Any]] = []  # Önemli olaylar
+    triggers: List[str] = []  # Tetikleyiciler
+    coping_strategies: List[str] = []  # Başa çıkma stratejileri
+    session_summaries: List[Dict[str, Any]] = []  # Her seans özeti
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class Admin(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(alias="_id")
