@@ -121,7 +121,8 @@ function App() {
       <BrowserRouter>
         <AuthHandler />
         <Routes>
-          <Route path="/" element={<UserTypeSelection />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/user-type-selection" element={<UserTypeSelection />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
           <Route path="/doctor/patient/:patientId" element={<PatientDetailPage />} />
