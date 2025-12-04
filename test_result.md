@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added account_status field to User model (pending, approved, rejected). Updated auth/session endpoint to check status and block pending/rejected users. Created admin endpoints: /admin/pending-users (get), /admin/approve-user/{id} (post), /admin/reject-user/{id} (post). Doctors and psychiatrists default to 'pending' status on signup, patients default to 'approved'."
+      - working: true
+        agent: "testing"
+        comment: "TESTED: Admin approval system fully functional. ✅ Admin Endpoints: GET /admin/pending-users returns only pending doctors/psychiatrists (100% success). ✅ Admin Approve: POST /admin/approve-user/{id} successfully changes account_status to 'approved', records admin ID and timestamp (100% success). ✅ Admin Reject: POST /admin/reject-user/{id} successfully changes account_status to 'rejected', saves rejection reason (100% success). ✅ Database Integration: All status changes properly persisted in MongoDB with audit trail. ✅ User Status Logic: Doctors/psychiatrists default to 'pending', patients default to 'approved' as designed. ✅ Authorization: Admin endpoints properly protected with admin token verification. Note: Full auth session flow testing limited by external Emergent Auth service dependency - core approval logic verified through direct database testing. All admin approval workflows working correctly."
 
   - task: "Implement MongoDB + RAG memory system"
     implemented: true
