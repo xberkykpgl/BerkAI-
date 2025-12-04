@@ -156,10 +156,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Voice input functionality in SessionPage.js"
-    - "UI state changes (recording indicator)"
-    - "Integration with existing text input"
-  stuck_tasks: []
+    - "BerkAI response length and question density"
+    - "Voice input functionality in SessionPage.js (network error - on hold per user request)"
+    - "AI conversation flow (short questions, detailed advice)"
+  stuck_tasks:
+    - "Voice input network error (Web Speech API timeout with continuous mode)"
   test_all: false
   test_priority: "high_first"
 
