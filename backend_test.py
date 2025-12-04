@@ -434,6 +434,113 @@ class BerkAIRAGMemoryTester:
         
         return limit_session_id
 
+    def verify_user_profile_summary(self, session_id, expected_topic):
+        """Verify AI summary was saved to user_profiles collection"""
+        print(f"🔍 Verifying user profile summary for session {session_id}...")
+        
+        mongo_script = f"""
+        use('berkai_database');
+        const profile = db.user_profiles.findOne({{"user_id": "{self.user_id}"}});
+        if (profile && profile.session_summaries) {{
+            const sessionSummary = profile.session_summaries.find(s => s.session_id === "{session_id}");
+            if (sessionSummary) {{
+                print("SUMMARY_FOUND:" + JSON.stringify(sessionSummary));
+            }} else {{
+                print("SUMMARY_NOT_FOUND");
+            }}
+        }} else {{
+            print("PROFILE_NOT_FOUND");
+        }}
+        """
+        
+        try:
+            result = subprocess.run(['mongosh', '--eval', mongo_script], 
+                                  capture_output=True, text=True, timeout=30)
+            
+            if "SUMMARY_FOUND:" in result.stdout:
+                summary_data = result.stdout.split("SUMMARY_FOUND:")[1].strip()
+                try:
+                    summary_obj = json.loads(summary_data)
+                    summary_text = summary_obj.get('summary', '').lower()
+                    
+                    if expected_topic in summary_text or any(word in summary_text for word in expected_topic.split()):
+                        self.log_test(f"AI summary generation for {expected_topic}", True, "Summary contains expected topic")
+                        self.session_summaries.append(summary_obj)
+                    else:
+                        self.log_test(f"AI summary generation for {expected_topic}", False, f"Summary doesn't contain '{expected_topic}'")
+                except json.JSONDecodeError:
+                    self.log_test(f"AI summary parsing for {expected_topic}", False, "Could not parse summary JSON")
+            elif "SUMMARY_NOT_FOUND" in result.stdout:
+                self.log_test(f"AI summary storage for {expected_topic}", False, "Summary not found in user_profiles")
+            else:
+                self.log_test(f"User profile creation for {expected_topic}", False, "User profile not found")
+                
+        except Exception as e:
+            self.log_test(f"MongoDB verification for {expected_topic}", False, f"MongoDB query failed: {str(e)}")
+
+    def verify_mongodb_collections(self):
+        """Verify MongoDB collections contain expected data"""
+        print("\n🗄️ Verifying MongoDB Collections...")
+        
+        mongo_script = f"""
+        use('berkai_database');
+        
+        // Check user_profiles collection
+        const profileCount = db.user_profiles.countDocuments({{"user_id": "{self.user_id}"}});
+        print("USER_PROFILES_COUNT:" + profileCount);
+        
+        // Check therapy_sessions collection
+        const sessionCount = db.therapy_sessions.countDocuments({{"user_id": "{self.user_id}"}});
+        print("THERAPY_SESSIONS_COUNT:" + sessionCount);
+        
+        // Check messages collection
+        const messageCount = db.messages.countDocuments({{"user_id": "{self.user_id}"}});
+        print("MESSAGES_COUNT:" + messageCount);
+        
+        // Get profile details
+        const profile = db.user_profiles.findOne({{"user_id": "{self.user_id}"}});
+        if (profile) {{
+            print("SESSION_SUMMARIES_COUNT:" + (profile.session_summaries ? profile.session_summaries.length : 0));
+        }}
+        """
+        
+        try:
+            result = subprocess.run(['mongosh', '--eval', mongo_script], 
+                                  capture_output=True, text=True, timeout=30)
+            
+            output = result.stdout
+            
+            # Parse counts
+            profile_count = int(output.split("USER_PROFILES_COUNT:")[1].split("\n")[0]) if "USER_PROFILES_COUNT:" in output else 0
+            session_count = int(output.split("THERAPY_SESSIONS_COUNT:")[1].split("\n")[0]) if "THERAPY_SESSIONS_COUNT:" in output else 0
+            message_count = int(output.split("MESSAGES_COUNT:")[1].split("\n")[0]) if "MESSAGES_COUNT:" in output else 0
+            summary_count = int(output.split("SESSION_SUMMARIES_COUNT:")[1].split("\n")[0]) if "SESSION_SUMMARIES_COUNT:" in output else 0
+            
+            print(f"📊 MongoDB Data Summary:")
+            print(f"  User Profiles: {profile_count}")
+            print(f"  Therapy Sessions: {session_count}")
+            print(f"  Messages: {message_count}")
+            print(f"  Session Summaries: {summary_count}")
+            
+            # Verify expected data
+            if profile_count >= 1:
+                self.log_test("User profile creation", True, f"Found {profile_count} user profile(s)")
+            else:
+                self.log_test("User profile creation", False, "No user profiles found")
+            
+            if session_count >= len(self.test_sessions):
+                self.log_test("Session storage", True, f"Found {session_count} sessions")
+            else:
+                self.log_test("Session storage", False, f"Expected {len(self.test_sessions)} sessions, found {session_count}")
+            
+            if summary_count >= 2:  # Expect at least 2 summaries from work and relationship sessions
+                self.log_test("Session summaries storage", True, f"Found {summary_count} session summaries")
+            else:
+                self.log_test("Session summaries storage", False, f"Expected at least 2 summaries, found {summary_count}")
+                
+        except Exception as e:
+            self.log_test("MongoDB collections verification", False, f"Verification failed: {str(e)}")
+
     def cleanup_test_data(self):
         """Clean up test data"""
         print("\n🧹 Cleaning up test data...")
@@ -446,10 +553,11 @@ class BerkAIRAGMemoryTester:
             db.therapy_sessions.deleteMany({{user_id: '{self.user_id}'}});
             db.messages.deleteMany({{user_id: '{self.user_id}'}});
             db.video_analyses.deleteMany({{user_id: '{self.user_id}'}});
+            db.user_profiles.deleteMany({{user_id: '{self.user_id}'}});
+            db.risk_assessments.deleteMany({{user_id: '{self.user_id}'}});
             print('Test data cleaned up');
             """
             
-            import subprocess
             try:
                 subprocess.run(['mongosh', '--eval', mongo_script], 
                              capture_output=True, text=True, timeout=30)
