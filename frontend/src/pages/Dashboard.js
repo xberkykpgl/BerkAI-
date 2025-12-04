@@ -214,7 +214,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   {req.response_message && (
-                    <p className="text-sm text-gray-300 mt-2">"{req.response_message}"</p>
+                    <p className="text-sm text-gray-300 mt-2">&ldquo;{req.response_message}&rdquo;</p>
                   )}
                   {req.status === 'accepted' && req.video_call_url && (
                     <Button className="w-full mt-3 bg-gradient-to-r from-green-500 to-teal-500">
