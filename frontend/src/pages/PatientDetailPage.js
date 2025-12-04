@@ -216,7 +216,7 @@ export default function PatientDetailPage() {
                     <div key={msg.id} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-start mb-1">
                         <Badge variant={msg.role === 'user' ? 'default' : 'secondary'} className="text-xs">
-                          {msg.role === 'user' ? 'Hasta' : 'BerkAI'}
+                          {msg.role === 'user' ? 'Danışan' : 'BerkAI'}
                         </Badge>
                         <span className="text-xs text-gray-500">
                           {new Date(msg.timestamp).toLocaleDateString('tr-TR')}
