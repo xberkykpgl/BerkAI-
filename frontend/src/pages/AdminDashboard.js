@@ -9,6 +9,7 @@ import AdminUserDetail from '../components/admin/AdminUserDetail';
 import AdminAllSessions from '../components/admin/AdminAllSessions';
 import AdminAllMessages from '../components/admin/AdminAllMessages';
 import AdminProfiles from '../components/admin/AdminProfiles';
+import AdminPendingUsers from '../components/admin/AdminPendingUsers';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
