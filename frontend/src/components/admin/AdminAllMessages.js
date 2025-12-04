@@ -126,7 +126,7 @@ export default function AdminAllMessages() {
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Badge variant="outline">
-                  {msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}
+                  {msg.role === 'user' ? 'Kullanıcı' : 'MiraMind'}
                 </Badge>
                 {msg.user_name && (
                   <span className="text-sm font-medium text-gray-700">{msg.user_name}</span>

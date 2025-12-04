@@ -123,7 +123,7 @@ export default function Dashboard() {
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">BerkAI</h1>
+                <h1 className="text-xl font-bold text-white">MiraMind</h1>
                 <p className="text-xs text-gray-400">Senin için buradayım</p>
               </div>
             </div>

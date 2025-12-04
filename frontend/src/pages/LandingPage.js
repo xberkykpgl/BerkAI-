@@ -37,7 +37,7 @@ export default function LandingPage() {
                 Gece herkes uyurken…
               </span>
               <span className="block mt-2 text-white neon-glow">
-                BerkAI yanındadır.
+                MiraMind yanındadır.
               </span>
             </h1>
 
@@ -72,7 +72,7 @@ export default function LandingPage() {
                   </div>
                   <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl rounded-tl-none p-4 flex-1 border border-purple-400/30">
                     <p className="text-white text-sm">
-                      Merhaba! Ben BerkAI. Nasıl hissediyorsun? 💜
+                      Merhaba! Ben MiraMind. Nasıl hissediyorsun? 💜
                     </p>
                   </div>
                 </div>
@@ -111,7 +111,7 @@ export default function LandingPage() {
             Buradaki her kelimen güvende.
           </h2>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto">
-            BerkAI bir terapist değil. Kalbini ve zihnini hafifletmek için daima yanında olan dijital bir yol arkadaşı.
+            MiraMind bir terapist değil. Kalbini ve zihnini hafifletmek için daima yanında olan dijital bir yol arkadaşı.
           </p>
         </div>
 
@@ -221,7 +221,7 @@ export default function LandingPage() {
             <h2 className="text-4xl font-bold text-white mb-6">
               Hazır olduğunda yaz.<br />
               <span className="bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent">
-                BerkAI hep burada.
+                MiraMind hep burada.
               </span>
             </h2>
             

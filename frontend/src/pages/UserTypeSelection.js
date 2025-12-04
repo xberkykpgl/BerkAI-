@@ -43,7 +43,7 @@ export default function UserTypeSelection() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 mb-8">
               <Brain className="w-5 h-5 text-pink-300" />
-              <span className="text-sm font-medium text-white">BerkAI Professional</span>
+              <span className="text-sm font-medium text-white">MiraMind Professional</span>
             </div>
             
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">

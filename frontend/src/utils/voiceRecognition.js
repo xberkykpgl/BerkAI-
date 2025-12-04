@@ -1,4 +1,4 @@
-// Reliable Speech Recognition Helper for BerkAI
+// Reliable Speech Recognition Helper for MiraMind
 // Handles all edge cases and provides fallbacks
 
 export class VoiceRecognition {

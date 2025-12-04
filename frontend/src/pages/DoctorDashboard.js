@@ -105,7 +105,7 @@ export default function DoctorDashboard() {
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">BerkAI Professional</h1>
+                <h1 className="text-xl font-bold text-gray-900">MiraMind Professional</h1>
                 <p className="text-xs text-gray-500">{user?.user_type === 'psychiatrist' ? 'Psikiyatrist' : 'Psikolog'} Paneli</p>
               </div>
             </div>

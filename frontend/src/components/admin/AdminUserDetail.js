@@ -208,7 +208,7 @@ export default function AdminUserDetail({ userId, onBack }) {
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline">{msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}</Badge>
+                <Badge variant="outline">{msg.role === 'user' ? 'Kullanıcı' : 'MiraMind'}</Badge>
                 <span className="text-xs text-gray-500">
                   {new Date(msg.timestamp).toLocaleString('tr-TR')}
                 </span>

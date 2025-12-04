@@ -78,7 +78,7 @@ export default function AdminDashboard() {
                 <Database className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">BerkAI Admin Panel</h1>
+                <h1 className="text-xl font-bold text-gray-900">MiraMind Admin Panel</h1>
                 <p className="text-sm text-gray-500">Kapsamlı Yönetim Sistemi</p>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-xs font-medium text-gray-600">
-                              {msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}
+                              {msg.role === 'user' ? 'Kullanıcı' : 'MiraMind'}
                             </span>
                             <span className="text-xs text-gray-500">
                               {new Date(msg.timestamp).toLocaleString('tr-TR')}

@@ -128,7 +128,7 @@ export default function AdminUsers() {
                     variant="outline"
                     onClick={() => {
                       const allMessages = userDetail.recent_messages.map(m => 
-                        `[${new Date(m.timestamp).toLocaleString('tr-TR')}] ${m.role === 'user' ? 'Kullanıcı' : 'BerkAI'}: ${m.content}`
+                        `[${new Date(m.timestamp).toLocaleString('tr-TR')}] ${m.role === 'user' ? 'Kullanıcı' : 'MiraMind'}: ${m.content}`
                       ).join('\n\n');
                       navigator.clipboard.writeText(allMessages);
                       toast.success('Mesajlar kopyalandı!');
@@ -145,7 +145,7 @@ export default function AdminUsers() {
                         <span className={`text-xs font-medium px-2 py-1 rounded ${
                           msg.role === 'user' ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'
                         }`}>
-                          {msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}
+                          {msg.role === 'user' ? 'Kullanıcı' : 'MiraMind'}
                         </span>
                         <span className="text-xs text-gray-400">
                           {new Date(msg.timestamp).toLocaleString('tr-TR')}

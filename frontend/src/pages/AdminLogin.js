@@ -40,7 +40,7 @@ export default function AdminLogin() {
             <Shield className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
-          <p className="text-gray-300">BerkAI Yönetim Sistemi</p>
+          <p className="text-gray-300">MiraMind Yönetim Sistemi</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

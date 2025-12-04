@@ -341,13 +341,13 @@ export default function SessionPage() {
             <Card className="p-6 bg-white/80 backdrop-blur-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Brain className="w-5 h-5" />
-                BerkAI ile Sohbet
+                MiraMind ile Sohbet
               </h3>
               
               <div className="space-y-4 mb-4 max-h-96 overflow-y-auto" data-testid="messages-container">
                 {messages.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    <p>Sohbete hoş geldiniz. BerkAI sizinle konuşmaya hazır.</p>
+                    <p>Sohbete hoş geldiniz. MiraMind sizinle konuşmaya hazır.</p>
                   </div>
                 )}
                 {messages.map(msg => (
@@ -358,7 +358,7 @@ export default function SessionPage() {
               <div className="space-y-3">
                 <div className="text-xs text-gray-500 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span>💬 Mesajınızı yazın veya 🎤 ile konuşun • BerkAI sesli yanıt verir 🔊</span>
+                    <span>💬 Mesajınızı yazın veya 🎤 ile konuşun • MiraMind sesli yanıt verir 🔊</span>
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                       💚 Sizi hatırlıyorum
                     </span>

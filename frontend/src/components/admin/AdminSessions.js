@@ -111,7 +111,7 @@ export default function AdminSessions() {
                   <span className={`text-sm font-medium ${
                     msg.role === 'user' ? 'text-blue-300' : 'text-purple-300'
                   }`}>
-                    {msg.role === 'user' ? 'Kullanıcı' : 'BerkAI'}
+                    {msg.role === 'user' ? 'Kullanıcı' : 'MiraMind'}
                   </span>
                   <span className="text-xs text-gray-400">
                     {new Date(msg.timestamp).toLocaleString('tr-TR')}
