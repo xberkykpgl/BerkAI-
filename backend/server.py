@@ -1162,6 +1162,79 @@ async def update_ai_settings(request: Request):
     
     return {"success": True}
 
+@api_router.get("/admin/all-messages")
+async def get_all_messages(request: Request, limit: int = 100, skip: int = 0, user_id: str = None):
+    """Get all messages with filtering"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    query = {}
+    if user_id:
+        query["user_id"] = user_id
+    
+    messages = await db.messages.find(query, {"_id": 0}).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    total_count = await db.messages.count_documents(query)
+    
+    # Enrich with user info
+    for msg in messages:
+        user = await db.users.find_one({"_id": msg.get("user_id")}, {"name": 1, "email": 1})
+        if user:
+            msg["user_name"] = user.get("name", "Unknown")
+            msg["user_email"] = user.get("email", "Unknown")
+    
+    return {
+        "messages": messages,
+        "total": total_count,
+        "skip": skip,
+        "limit": limit
+    }
+
+@api_router.get("/admin/profiles")
+async def get_all_profiles(request: Request):
+    """Get all user profiles (RAG system)"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    profiles = await db.user_profiles.find({}, {"_id": 0}).to_list(1000)
+    
+    # Enrich with user info
+    for profile in profiles:
+        user = await db.users.find_one({"_id": profile.get("user_id")}, {"name": 1, "email": 1})
+        if user:
+            profile["user_name"] = user.get("name", "Unknown")
+            profile["user_email"] = user.get("email", "Unknown")
+    
+    return profiles
+
+@api_router.get("/admin/search")
+async def search_messages(request: Request, query: str, limit: int = 50):
+    """Search messages by content"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    # Search in message content
+    messages = await db.messages.find(
+        {"content": {"$regex": query, "$options": "i"}},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    # Enrich with user and session info
+    for msg in messages:
+        user = await db.users.find_one({"_id": msg.get("user_id")}, {"name": 1, "email": 1})
+        session = await db.therapy_sessions.find_one({"id": msg.get("session_id")}, {"session_name": 1, "started_at": 1})
+        
+        if user:
+            msg["user_name"] = user.get("name", "Unknown")
+            msg["user_email"] = user.get("email", "Unknown")
+        if session:
+            msg["session_name"] = session.get("session_name", "Unknown")
+            msg["session_date"] = session.get("started_at")
+    
+    return {"results": messages, "count": len(messages), "query": query}
+
 # ============= MAIN =============
 
 app.include_router(api_router)
