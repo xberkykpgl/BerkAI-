@@ -1388,6 +1388,203 @@ async def reject_user(request: Request, user_id: str):
     
     return {"success": True, "message": "Kullanıcı reddedildi"}
 
+# ============= SESSION REQUEST ENDPOINTS =============
+
+@api_router.post("/session-requests")
+async def create_session_request(request: Request):
+    """Patient requests a session with a psychologist"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    data = await request.json()
+    doctor_id = data.get("doctor_id")
+    preferred_date = data.get("preferred_date")
+    notes = data.get("notes", "")
+    
+    if not doctor_id:
+        raise HTTPException(status_code=400, detail="doctor_id required")
+    
+    # Get AI summary and risk level from latest session
+    latest_session = await db.therapy_sessions.find_one(
+        {"user_id": user.id},
+        sort=[("started_at", -1)]
+    )
+    
+    ai_summary = None
+    ai_risk_level = "low"
+    
+    if latest_session and latest_session.get("ai_summary"):
+        ai_summary = latest_session["ai_summary"]
+    
+    # Get risk assessment from latest messages
+    recent_messages = await db.messages.find(
+        {"user_id": user.id},
+        {"_id": 0, "content": 1}
+    ).sort("timestamp", -1).limit(10).to_list(10)
+    
+    # Simple risk detection (can be enhanced with AI)
+    risk_keywords = {
+        "critical": ["intihar", "kendime zarar", "ölmek istiyorum"],
+        "high": ["çok kötü", "dayanamıyorum", "bıktım"],
+        "medium": ["üzgün", "stresli", "kaygılı"]
+    }
+    
+    for msg in recent_messages:
+        content_lower = msg.get("content", "").lower()
+        for keyword in risk_keywords["critical"]:
+            if keyword in content_lower:
+                ai_risk_level = "critical"
+                break
+        if ai_risk_level == "critical":
+            break
+        for keyword in risk_keywords["high"]:
+            if keyword in content_lower:
+                ai_risk_level = "high"
+                break
+        if ai_risk_level == "high":
+            break
+        for keyword in risk_keywords["medium"]:
+            if keyword in content_lower:
+                ai_risk_level = "medium"
+    
+    session_request = {
+        "id": str(uuid.uuid4()),
+        "patient_id": user.id,
+        "doctor_id": doctor_id,
+        "requested_at": datetime.now(timezone.utc),
+        "status": "pending",
+        "preferred_date": preferred_date,
+        "notes": notes,
+        "ai_risk_level": ai_risk_level,
+        "ai_summary": ai_summary,
+        "response_message": None,
+        "scheduled_at": None,
+        "video_call_url": None
+    }
+    
+    await db.session_requests.insert_one(session_request)
+    
+    return {"success": True, "request_id": session_request["id"], "risk_level": ai_risk_level}
+
+@api_router.get("/session-requests/my-requests")
+async def get_my_session_requests(request: Request):
+    """Get patient's session requests"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    requests = await db.session_requests.find(
+        {"patient_id": user.id}
+    ).sort("requested_at", -1).to_list(100)
+    
+    # Enrich with doctor info
+    for req in requests:
+        doctor = await db.users.find_one({"_id": req["doctor_id"]}, {"name": 1, "specialization": 1, "picture": 1})
+        if doctor:
+            req["doctor_name"] = doctor.get("name")
+            req["doctor_specialization"] = doctor.get("specialization")
+            req["doctor_picture"] = doctor.get("picture")
+    
+    return requests
+
+@api_router.get("/doctor/session-requests")
+async def get_doctor_session_requests(request: Request):
+    """Get session requests for a doctor"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    requests = await db.session_requests.find(
+        {"doctor_id": user.id}
+    ).sort("requested_at", -1).to_list(100)
+    
+    # Enrich with patient info
+    for req in requests:
+        patient = await db.users.find_one({"_id": req["patient_id"]}, {"name": 1, "picture": 1, "user_id_number": 1})
+        if patient:
+            req["patient_name"] = patient.get("name")
+            req["patient_picture"] = patient.get("picture")
+            req["patient_id_number"] = patient.get("user_id_number")
+    
+    return requests
+
+@api_router.post("/doctor/session-requests/{request_id}/accept")
+async def accept_session_request(request: Request, request_id: str):
+    """Doctor accepts a session request"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    data = await request.json()
+    scheduled_at = data.get("scheduled_at")
+    response_message = data.get("response_message", "")
+    
+    update_data = {
+        "status": "accepted",
+        "response_message": response_message,
+        "video_call_url": "PLACEHOLDER_VIDEO_URL"  # Future: Integrate Zoom/WebRTC
+    }
+    
+    if scheduled_at:
+        update_data["scheduled_at"] = datetime.fromisoformat(scheduled_at.replace('Z', '+00:00'))
+    
+    result = await db.session_requests.update_one(
+        {"id": request_id, "doctor_id": user.id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    return {"success": True, "message": "Seans talebi kabul edildi"}
+
+@api_router.post("/doctor/session-requests/{request_id}/reject")
+async def reject_session_request(request: Request, request_id: str):
+    """Doctor rejects a session request"""
+    user = await get_current_user(request)
+    if not user or user.user_type not in ["doctor", "psychiatrist"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    data = await request.json()
+    response_message = data.get("response_message", "")
+    
+    result = await db.session_requests.update_one(
+        {"id": request_id, "doctor_id": user.id},
+        {"$set": {
+            "status": "rejected",
+            "response_message": response_message
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    return {"success": True, "message": "Seans talebi reddedildi"}
+
+@api_router.get("/doctors/available")
+async def get_available_doctors(request: Request):
+    """Get list of approved doctors for patient to choose"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    doctors = await db.users.find(
+        {
+            "user_type": {"$in": ["doctor", "psychiatrist"]},
+            "account_status": "approved"
+        },
+        {"password_hash": 0}
+    ).to_list(100)
+    
+    # Add patient count for each doctor
+    for doctor in doctors:
+        patient_count = len(doctor.get("assigned_patients", []))
+        doctor["patient_count"] = patient_count
+        doctor["id"] = doctor.pop("_id")
+    
+    return doctors
+
 # ============= MAIN =============
 
 app.include_router(api_router)
