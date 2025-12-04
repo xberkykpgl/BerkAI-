@@ -45,6 +45,10 @@ class User(BaseModel):
     name: str
     picture: Optional[str] = None
     user_type: str = "patient"  # patient, doctor, psychiatrist
+    account_status: str = "approved"  # pending, approved, rejected
+    status_updated_by: Optional[str] = None  # Admin ID who approved/rejected
+    status_updated_at: Optional[datetime] = None
+    rejection_reason: Optional[str] = None
     user_id_number: str = ""  # Unique ID for linking
     license_number: Optional[str] = None  # For doctors/psychiatrists
     specialization: Optional[str] = None  # For doctors/psychiatrists
