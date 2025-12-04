@@ -241,57 +241,6 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
-      {/* Custom Styles */}
-      <style jsx>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-
-        .stars, .stars2, .stars3 {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          background: white;
-          box-shadow: 
-            ${Array.from({ length: 100 }, (_, i) => 
-              `${Math.random() * 2000}px ${Math.random() * 2000}px white`
-            ).join(',')};
-          animation: twinkle ${Math.random() * 3 + 2}s infinite;
-        }
-
-        .stars2 {
-          width: 2px;
-          height: 2px;
-          box-shadow: 
-            ${Array.from({ length: 50 }, (_, i) => 
-              `${Math.random() * 2000}px ${Math.random() * 2000}px white`
-            ).join(',')};
-          animation-delay: 1s;
-        }
-
-        .stars3 {
-          width: 3px;
-          height: 3px;
-          box-shadow: 
-            ${Array.from({ length: 25 }, (_, i) => 
-              `${Math.random() * 2000}px ${Math.random() * 2000}px white`
-            ).join(',')};
-          animation-delay: 2s;
-        }
-
-        .neon-glow {
-          text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
-                       0 0 40px rgba(168, 85, 247, 0.4),
-                       0 0 60px rgba(236, 72, 153, 0.3);
-        }
-
-        .neon-button {
-          box-shadow: 0 0 30px rgba(236, 72, 153, 0.5),
-                      0 0 60px rgba(168, 85, 247, 0.3);
-        }
-      `}</style>
     </div>
   );
 }
