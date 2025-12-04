@@ -38,7 +38,7 @@ export default function SessionPage() {
 
     // Initialize voice recognition
     voiceRecognitionRef.current = new VoiceRecognition(
-      (transcript, isFinal) => {
+      (transcript, isInterim) => {
         // Update input message as user speaks
         setInputMessage(transcript);
       },
@@ -48,7 +48,7 @@ export default function SessionPage() {
       },
       () => {
         setIsRecording(true);
-        toast.success('🎤 Dinliyorum...');
+        toast.success('🎤 Dinliyorum... (konuşmayı bitirince butona tekrar tıklayın)');
       },
       (finalTranscript) => {
         setIsRecording(false);
@@ -56,7 +56,8 @@ export default function SessionPage() {
           setInputMessage(finalTranscript);
           toast.success('✅ Ses kaydı tamamlandı');
         }
-      }
+      },
+      { continuous: false } // Use non-continuous mode for better network stability
     );
 
     return () => {
