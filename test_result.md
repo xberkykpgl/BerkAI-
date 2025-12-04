@@ -105,13 +105,25 @@
 user_problem_statement: "1) Re-enable patient voice input in SessionPage.js using the stable voiceRecognition.js helper. Microphone button should be placed right above the send message button. 2) BerkAI asks too many questions in long paragraphs. User wants: short responses (max 3-4 sentences), fewer questions per response, but detailed advice when giving recommendations."
 
 backend:
+  - task: "Implement MongoDB + RAG memory system"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added UserProfile model with main_issues, progress_notes, important_events, triggers, coping_strategies, and session_summaries. Enhanced complete_session endpoint to generate AI summaries using GPT-5 after each session. Updated chat endpoint to load full user profile (last 5 session summaries) instead of just 3 messages. Increased message context from 10 to 20 messages per session. Removed 100-character limit on messages. System now has comprehensive memory across all sessions."
+        
   - task: "Update BerkAI system prompt for concise responses"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
