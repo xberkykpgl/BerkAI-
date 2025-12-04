@@ -538,33 +538,47 @@ async def chat_with_berkai(request: Request, session_id: str):
             "crisis_mode": True
         }
     
-    # Get current session history
+    # Get current session history (son 20 mesaj)
     current_session_messages = await db.messages.find(
         {"session_id": session_id, "user_id": user.id},
         {"_id": 0}
-    ).sort("timestamp", 1).limit(10).to_list(10)
+    ).sort("timestamp", 1).limit(20).to_list(20)
     
-    # Get user's previous sessions summary (kullanıcının geçmiş bilgileri)
-    previous_sessions = await db.therapy_sessions.find(
-        {"user_id": user.id, "id": {"$ne": session_id}},
-        {"_id": 0}
-    ).sort("started_at", -1).limit(3).to_list(3)  # Son 3 seans
+    # Load user profile with all session summaries (RAG system)
+    user_profile = await db.user_profiles.find_one({"user_id": user.id})
     
-    # Get key messages from previous sessions
-    user_history_context = ""
-    if previous_sessions:
-        for prev_session in previous_sessions:
-            # Get last few important messages from each previous session
-            prev_messages = await db.messages.find(
-                {"session_id": prev_session["id"], "user_id": user.id, "role": "user"},
-                {"_id": 0, "content": 1, "timestamp": 1}
-            ).sort("timestamp", -1).limit(3).to_list(3)
-            
-            if prev_messages:
+    profile_context = ""
+    if user_profile:
+        # Build comprehensive profile context
+        profile_context = "KULLANICI PROFİLİ VE GEÇMİŞ:\n"
+        
+        if user_profile.get("main_issues"):
+            profile_context += f"\nAna Sorunlar: {', '.join(user_profile['main_issues'])}"
+        
+        if user_profile.get("triggers"):
+            profile_context += f"\nTetikleyiciler: {', '.join(user_profile['triggers'])}"
+        
+        if user_profile.get("coping_strategies"):
+            profile_context += f"\nBaşa Çıkma Stratejileri: {', '.join(user_profile['coping_strategies'])}"
+        
+        # Include session summaries (last 5 sessions)
+        if user_profile.get("session_summaries"):
+            profile_context += "\n\nÖnceki Seanslardan Önemli Notlar:"
+            for summary_data in user_profile["session_summaries"][-5:]:
+                profile_context += f"\n[{summary_data.get('date', 'Tarih yok')[:10]}]\n{summary_data.get('summary', '')}\n"
+    
+    # If no profile exists, create basic context from recent sessions
+    if not profile_context:
+        previous_sessions = await db.therapy_sessions.find(
+            {"user_id": user.id, "id": {"$ne": session_id}, "ai_summary": {"$exists": True}},
+            {"_id": 0, "started_at": 1, "ai_summary": 1}
+        ).sort("started_at", -1).limit(3).to_list(3)
+        
+        if previous_sessions:
+            profile_context = "Önceki Seanslardan Notlar:\n"
+            for prev_session in previous_sessions:
                 session_date = prev_session["started_at"].strftime("%d.%m.%Y")
-                user_history_context += f"\n[{session_date}] "
-                user_topics = [msg["content"][:100] for msg in prev_messages]
-                user_history_context += " | ".join(user_topics)
+                profile_context += f"\n[{session_date}]\n{prev_session.get('ai_summary', '')}\n"
     
     # Video analysis only if requested and frame provided
     video_analysis_result = None
@@ -573,19 +587,18 @@ async def chat_with_berkai(request: Request, session_id: str):
     
     # Build current conversation context
     context_messages = []
-    for msg in current_session_messages[-6:]:
+    for msg in current_session_messages[-10:]:  # Son 10 mesaj
         role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
-        context_messages.append(f"{role}: {msg['content'][:200]}")
+        context_messages.append(f"{role}: {msg['content']}")
     
     current_conversation = "\n".join(context_messages)
     
-    # Enhanced system prompt with user history
+    # Enhanced system prompt with full user profile
     system_prompt = f"""Sen BerkAI'sın, empatik ve samimi bir psikolojik destek asistanısın.
 
 Kullanıcı: {user.name}
 
-Kullanıcının Önceki Seanslarından Bilgiler:
-{user_history_context if user_history_context else "İlk seans - önceki geçmiş yok"}
+{profile_context if profile_context else "İlk seans - önceki geçmiş yok"}
 
 Bu Seanstaki Konuşma:
 {current_conversation}
