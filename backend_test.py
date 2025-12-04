@@ -132,46 +132,73 @@ class BerkAIRAGMemoryTester:
         )
         self.session_token = temp_token
 
-    def test_session_endpoints(self):
-        """Test therapy session endpoints"""
-        print("\n🏥 Testing Session Management...")
+    def test_session_summary_generation(self):
+        """Test Session Summary Generation with AI"""
+        print("\n🧠 Testing Session Summary Generation...")
         
-        # Get user sessions
-        success, sessions = self.run_api_test(
-            "Get user sessions",
-            "GET",
-            "sessions",
-            200
-        )
-        
-        # Create new session
+        # Create new session for work stress conversation
         success, session_data = self.run_api_test(
-            "Create therapy session",
+            "Create work stress session",
             "POST",
-            "sessions?session_name=Test Session",
+            "sessions?session_name=Work Stress Session",
             200
         )
         
-        if success and 'id' in session_data:
-            self.test_session_id = session_data['id']
-            print(f"📝 Created test session: {self.test_session_id}")
-            
-            # Get specific session
-            self.run_api_test(
-                "Get specific session",
-                "GET",
-                f"sessions/{self.test_session_id}",
-                200
-            )
-            
-            # Complete session
-            self.run_api_test(
-                "Complete session",
-                "PATCH",
-                f"sessions/{self.test_session_id}/complete",
+        if not success or 'id' not in session_data:
+            self.log_test("Session creation for summary test", False, "Failed to create session")
+            return
+        
+        session_id = session_data['id']
+        self.test_sessions.append(session_id)
+        print(f"📝 Created work stress session: {session_id}")
+        
+        # Have a conversation about work stress (5-6 messages)
+        work_messages = [
+            "Merhaba, işte çok stresli bir dönem geçiriyorum.",
+            "Patronum sürekli fazla mesai istiyor ve bu beni çok yoruyor.",
+            "Evde de bu stresi yaşıyorum, ailemle vakit geçiremiyorum.",
+            "Bazen işi bırakmayı düşünüyorum ama maddi durumum elvermez.",
+            "Bu durumla nasıl başa çıkabilirim? Çok bunaldım.",
+            "Uyku düzenim de bozuldu, sürekli endişeliyim."
+        ]
+        
+        print("💬 Simulating work stress conversation...")
+        for i, message in enumerate(work_messages):
+            success, response = self.run_api_test(
+                f"Work stress message {i+1}",
+                "POST",
+                f"sessions/{session_id}/chat",
                 200,
-                data={"analysis_summary": {"test": "completed"}}
+                data={"message": message}
             )
+            
+            if success and 'message' in response:
+                print(f"  User: {message[:50]}...")
+                print(f"  AI: {response['message'][:80]}...")
+            
+            time.sleep(1)  # Brief pause between messages
+        
+        # Complete the session to trigger AI summary generation
+        print("🔄 Completing session to generate AI summary...")
+        success, complete_response = self.run_api_test(
+            "Complete work stress session",
+            "PATCH",
+            f"sessions/{session_id}/complete",
+            200,
+            data={"analysis_summary": {"topic": "work_stress"}}
+        )
+        
+        if success:
+            summary_generated = complete_response.get('summary_generated', False)
+            if summary_generated:
+                print("✅ AI summary generation confirmed")
+                
+                # Verify summary was saved to user_profiles collection
+                self.verify_user_profile_summary(session_id, "work stress")
+            else:
+                self.log_test("AI summary generation", False, "No summary generated flag")
+        
+        return session_id
 
     def test_message_endpoints(self):
         """Test messaging and chat endpoints"""
