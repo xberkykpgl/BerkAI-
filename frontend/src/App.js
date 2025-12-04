@@ -49,6 +49,19 @@ function AuthHandler() {
             window.history.replaceState({}, document.title, window.location.pathname);
             sessionStorage.removeItem('pending_user_type');
             
+            // Check for pending approval or rejection
+            if (response.data.pending_approval) {
+              alert(response.data.message);
+              navigate('/');
+              return;
+            }
+            
+            if (response.data.rejected) {
+              alert(response.data.message);
+              navigate('/');
+              return;
+            }
+            
             // Redirect based on user type
             if (response.data.user_type === 'doctor' || response.data.user_type === 'psychiatrist') {
               navigate('/doctor/dashboard');
