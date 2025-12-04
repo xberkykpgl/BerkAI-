@@ -202,6 +202,7 @@ export default function PatientDetailPage() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
+            <TabsTrigger value="ai-insights">AI Özetleri & Profil</TabsTrigger>
             <TabsTrigger value="sessions">Seanslar</TabsTrigger>
             <TabsTrigger value="risks">Risk Uyarıları</TabsTrigger>
             <TabsTrigger value="notes">Klinik Notlar</TabsTrigger>
