@@ -179,6 +179,13 @@ export class VoiceRecognition {
   }
 
   stop() {
+    this.shouldContinue = false;
+    
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
+    }
+    
     if (this.recognition && this.isRecording) {
       try {
         this.recognition.stop();
@@ -190,6 +197,6 @@ export class VoiceRecognition {
   }
 
   isActive() {
-    return this.isRecording;
+    return this.isRecording || this.shouldContinue;
   }
 }
