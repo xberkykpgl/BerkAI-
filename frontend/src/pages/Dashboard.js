@@ -167,15 +167,17 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button 
-                  onClick={loadDoctors}
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 px-6 py-6 rounded-full"
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log('🔍 Button clicked!');
+                    loadDoctors();
+                  }}
+                  className="px-6 py-3 text-lg rounded-full border-2 border-white/20 text-white hover:bg-white/10 transition-all flex items-center gap-2"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
+                  <Sparkles className="w-5 h-5" />
                   Psikolog ile Görüş
-                </Button>
+                </button>
                 <Button 
                   onClick={createNewSession}
                   size="lg"
