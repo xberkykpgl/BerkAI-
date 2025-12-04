@@ -243,6 +243,146 @@ export default function PatientDetailPage() {
             </div>
           </TabsContent>
 
+          {/* AI Insights & Profile */}
+          <TabsContent value="ai-insights" className="space-y-6">
+            {profile ? (
+              <>
+                {/* RAG Profile */}
+                <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <Brain className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">RAG Memory Profili</h3>
+                      <p className="text-sm text-gray-600">AI tarafından oluşturulan kapsamlı danışan profili</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Main Issues */}
+                    {profile.main_issues && profile.main_issues.length > 0 && (
+                      <div className="bg-white p-4 rounded-lg border border-purple-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-red-600" />
+                          Ana Sorunlar
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.main_issues.map((issue, idx) => (
+                            <Badge key={idx} className="bg-red-100 text-red-700 border-red-300">
+                              {issue}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Triggers */}
+                    {profile.triggers && profile.triggers.length > 0 && (
+                      <div className="bg-white p-4 rounded-lg border border-purple-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-orange-600" />
+                          Tetikleyiciler
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.triggers.map((trigger, idx) => (
+                            <Badge key={idx} className="bg-orange-100 text-orange-700 border-orange-300">
+                              {trigger}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Coping Strategies */}
+                    {profile.coping_strategies && profile.coping_strategies.length > 0 && (
+                      <div className="bg-white p-4 rounded-lg border border-purple-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-green-600" />
+                          Başa Çıkma Stratejileri
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.coping_strategies.map((strategy, idx) => (
+                            <Badge key={idx} className="bg-green-100 text-green-700 border-green-300">
+                              {strategy}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Progress Notes */}
+                    {profile.progress_notes && profile.progress_notes.length > 0 && (
+                      <div className="bg-white p-4 rounded-lg border border-purple-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-blue-600" />
+                          İlerleme Notları
+                        </h4>
+                        <div className="space-y-2">
+                          {profile.progress_notes.slice(-3).map((note, idx) => (
+                            <div key={idx} className="text-sm text-gray-700 p-2 bg-blue-50 rounded">
+                              {note.note || JSON.stringify(note)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 text-xs text-gray-500">
+                    Son güncelleme: {new Date(profile.last_updated).toLocaleString('tr-TR')}
+                  </div>
+                </Card>
+
+                {/* Session Summaries */}
+                {profile.session_summaries && profile.session_summaries.length > 0 && (
+                  <Card className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <FileText className="w-6 h-6 text-teal-600" />
+                      AI Seans Özetleri ({profile.session_summaries.length})
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-6">Her seansın sonunda AI tarafından otomatik oluşturulan detaylı özetler</p>
+                    
+                    <div className="space-y-4">
+                      {profile.session_summaries.slice().reverse().map((summary, idx) => (
+                        <div key={idx} className="p-5 bg-gradient-to-r from-teal-50 to-blue-50 rounded-lg border border-teal-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-teal-600" />
+                              <span className="text-sm font-semibold text-teal-900">
+                                {new Date(summary.date).toLocaleDateString('tr-TR', { 
+                                  year: 'numeric', 
+                                  month: 'long', 
+                                  day: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="bg-teal-100 text-teal-700 border-teal-300">
+                              Seans #{profile.session_summaries.length - idx}
+                            </Badge>
+                          </div>
+                          <div className="prose prose-sm max-w-none">
+                            <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                              {summary.summary}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card className="p-12 text-center">
+                <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Henüz Profil Oluşturulmamış</h3>
+                <p className="text-gray-500">
+                  Danışan en az bir seans tamamladıktan sonra AI otomatik olarak profil ve özetler oluşturacak
+                </p>
+              </Card>
+            )}
+          </TabsContent>
+
           {/* Sessions */}
           <TabsContent value="sessions">
             <Card className="p-6">
