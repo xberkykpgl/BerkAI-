@@ -63,12 +63,12 @@ export default function DoctorDashboard() {
       await axios.post(`${API}/doctor/add-patient`, {
         patient_id_number: addPatientId
       });
-      toast.success('Hasta başarıyla eklendi!');
+      toast.success('Danışan başarıyla eklendi!');
       setAddPatientId('');
       loadData();
     } catch (error) {
       console.error('Error adding patient:', error);
-      toast.error(error.response?.data?.detail || 'Hasta eklenemedi');
+      toast.error(error.response?.data?.detail || 'Danışan eklenemedi');
     } finally {
       setAddingPatient(false);
     }
@@ -132,7 +132,7 @@ export default function DoctorDashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <StatCard icon={<Users />} title="Toplam Hasta" value={patients.length} color="blue" />
+          <StatCard icon={<Users />} title="Toplam Danışan" value={patients.length} color="blue" />
           <StatCard icon={<AlertTriangle />} title="Yüksek Risk" value={highRiskPatients.length} color="red" />
           <StatCard icon={<Activity />} title="Orta Risk" value={mediumRiskPatients.length} color="orange" />
           <StatCard icon={<FileText />} title="Bugünkü Notlar" value="0" color="green" />
@@ -142,22 +142,22 @@ export default function DoctorDashboard() {
         <Card className="p-6 mb-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-bold mb-2">Yeni Hasta Ekle</h3>
-              <p className="text-purple-100">Hastanın ID numarasını kullanarak ekleyin</p>
+              <h3 className="text-xl font-bold mb-2">Yeni Danışan Ekle</h3>
+              <p className="text-purple-100">Danışannın ID numarasını kullanarak ekleyin</p>
             </div>
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="bg-white text-purple-600 hover:bg-gray-50">
-                  <Plus className="w-4 h-4 mr-2" /> Hasta Ekle
+                  <Plus className="w-4 h-4 mr-2" /> Danışan Ekle
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Hasta Ekle</DialogTitle>
+                  <DialogTitle>Danışan Ekle</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <Input
-                    placeholder="Hasta ID Numarası (örn: BRK12345678)"
+                    placeholder="Danışan ID Numarası (örn: BRK12345678)"
                     value={addPatientId}
                     onChange={(e) => setAddPatientId(e.target.value)}
                     data-testid="patient-id-input"
@@ -168,7 +168,7 @@ export default function DoctorDashboard() {
                     className="w-full"
                     data-testid="add-patient-button"
                   >
-                    {addingPatient ? 'Ekleniyor...' : 'Hasta Ekle'}
+                    {addingPatient ? 'Ekleniyor...' : 'Danışan Ekle'}
                   </Button>
                 </div>
               </DialogContent>
@@ -178,13 +178,13 @@ export default function DoctorDashboard() {
 
         {/* Patients List */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Hastalarım</h2>
+          <h2 className="text-2xl font-bold mb-6">Danışanlarım</h2>
           
           {patients.length === 0 ? (
             <Card className="p-12 text-center">
               <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">Henüz hasta eklemediniz</p>
-              <p className="text-sm text-gray-400">Yukarıdaki "Hasta Ekle" butonunu kullanarak hasta ekleyebilirsiniz</p>
+              <p className="text-sm text-gray-400">Yukarıdaki "Danışan Ekle" butonunu kullanarak hasta ekleyebilirsiniz</p>
             </Card>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
