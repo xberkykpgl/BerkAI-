@@ -1054,14 +1054,15 @@ async def get_admin_stats(request: Request):
 
 @api_router.get("/admin/users")
 async def get_all_users(request: Request):
-    """Get all users"""
+    """Get all users with complete information"""
     is_admin = await verify_admin(request)
     if not is_admin:
         raise HTTPException(status_code=401, detail="Not authorized")
     
-    users = await db.users.find({}, {"_id": 1, "email": 1, "name": 1, "picture": 1, "created_at": 1}).to_list(1000)
+    # Get ALL user fields including password hash
+    users = await db.users.find({}).to_list(1000)
     
-    # Get session counts for each user
+    # Get session counts and message counts for each user
     for user in users:
         session_count = await db.therapy_sessions.count_documents({"user_id": user["_id"]})
         message_count = await db.messages.count_documents({"user_id": user["_id"]})
@@ -1073,24 +1074,38 @@ async def get_all_users(request: Request):
 
 @api_router.get("/admin/users/{user_id}")
 async def get_user_detail(request: Request, user_id: str):
-    """Get user details"""
+    """Get complete user details including all conversations"""
     is_admin = await verify_admin(request)
     if not is_admin:
         raise HTTPException(status_code=401, detail="Not authorized")
     
+    # Get complete user data including password hash
     user = await db.users.find_one({"_id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    sessions = await db.therapy_sessions.find({"user_id": user_id}).sort("started_at", -1).to_list(100)
-    messages = await db.messages.find({"user_id": user_id}, {"_id": 0}).sort("timestamp", -1).to_list(500)  # Increased to 500
+    # Get ALL sessions
+    sessions = await db.therapy_sessions.find({"user_id": user_id}).sort("started_at", -1).to_list(1000)
+    
+    # Get ALL messages
+    messages = await db.messages.find({"user_id": user_id}, {"_id": 0}).sort("timestamp", -1).to_list(5000)
+    
+    # Get user profile (RAG data)
+    profile = await db.user_profiles.find_one({"user_id": user_id}, {"_id": 0})
+    
+    # Get video analyses
+    analyses = await db.video_analyses.find({"user_id": user_id}, {"_id": 0, "frame_data": 0}).sort("timestamp", -1).to_list(1000)
     
     user["id"] = user.pop("_id")
     
     return {
         "user": user,
         "sessions": sessions,
-        "recent_messages": messages
+        "all_messages": messages,
+        "profile": profile,
+        "video_analyses": analyses,
+        "total_sessions": len(sessions),
+        "total_messages": len(messages)
     }
 
 @api_router.get("/admin/sessions")
