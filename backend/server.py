@@ -1291,6 +1291,88 @@ async def search_messages(request: Request, query: str, limit: int = 50):
     
     return {"results": messages, "count": len(messages), "query": query}
 
+@api_router.get("/admin/pending-users")
+async def get_pending_users(request: Request):
+    """Get all users pending admin approval"""
+    is_admin = await verify_admin(request)
+    if not is_admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    # Get pending doctors and psychiatrists
+    pending_users = await db.users.find(
+        {
+            "user_type": {"$in": ["doctor", "psychiatrist"]},
+            "account_status": "pending"
+        }
+    ).sort("created_at", -1).to_list(100)
+    
+    # Convert _id to id for frontend
+    for user in pending_users:
+        user["id"] = user.pop("_id")
+    
+    return pending_users
+
+@api_router.post("/admin/approve-user/{user_id}")
+async def approve_user(request: Request, user_id: str):
+    """Approve a pending doctor/psychiatrist"""
+    admin = await verify_admin(request)
+    if not admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    # Get admin info
+    admin_info = await db.admins.find_one({"email": request.cookies.get("admin_session_token")})
+    admin_id = admin_info.get("email") if admin_info else "admin"
+    
+    # Update user status
+    result = await db.users.update_one(
+        {"_id": user_id, "account_status": "pending"},
+        {
+            "$set": {
+                "account_status": "approved",
+                "status_updated_by": admin_id,
+                "status_updated_at": datetime.now(timezone.utc),
+                "rejection_reason": None
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or already processed")
+    
+    return {"success": True, "message": "Kullanıcı onaylandı"}
+
+@api_router.post("/admin/reject-user/{user_id}")
+async def reject_user(request: Request, user_id: str):
+    """Reject a pending doctor/psychiatrist"""
+    admin = await verify_admin(request)
+    if not admin:
+        raise HTTPException(status_code=401, detail="Not authorized")
+    
+    data = await request.json()
+    rejection_reason = data.get("reason", "Yeterli bilgi sağlanmadı")
+    
+    # Get admin info
+    admin_info = await db.admins.find_one({"email": request.cookies.get("admin_session_token")})
+    admin_id = admin_info.get("email") if admin_info else "admin"
+    
+    # Update user status
+    result = await db.users.update_one(
+        {"_id": user_id, "account_status": "pending"},
+        {
+            "$set": {
+                "account_status": "rejected",
+                "status_updated_by": admin_id,
+                "status_updated_at": datetime.now(timezone.utc),
+                "rejection_reason": rejection_reason
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or already processed")
+    
+    return {"success": True, "message": "Kullanıcı reddedildi"}
+
 # ============= MAIN =============
 
 app.include_router(api_router)
