@@ -120,15 +120,18 @@ backend:
 frontend:
   - task: "Integrate voiceRecognition.js helper into SessionPage.js"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/pages/SessionPage.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: "Added voice recording state, initialized VoiceRecognition in useEffect, created toggleVoiceRecording function, and added microphone button above send button with purple/pink gradient when idle and red pulsing animation when recording"
+      - working: false
+        agent: "user"
+        comment: "User reports 'internet bağlantısı hatası' (network error) when opening microphone. Web Speech API requires network connection to Google servers."
 
 metadata:
   created_by: "main_agent"
