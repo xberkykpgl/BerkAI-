@@ -4,17 +4,19 @@ import json
 import base64
 from datetime import datetime
 import time
+import subprocess
 
-class BerkAIAPITester:
+class BerkAIRAGMemoryTester:
     def __init__(self, base_url="https://berkai-companion.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.session_token = None
         self.user_id = None
-        self.test_session_id = None
+        self.test_sessions = []  # Track multiple sessions
         self.tests_run = 0
         self.tests_passed = 0
         self.failed_tests = []
+        self.session_summaries = []  # Track generated summaries
 
     def log_test(self, name, success, details=""):
         """Log test result"""
