@@ -67,12 +67,14 @@ export default function Dashboard() {
   };
 
   const loadDoctors = async () => {
+    console.log('🔍 loadDoctors called - fetching doctors...');
     try {
       const response = await axios.get(`${API}/doctors/available`);
+      console.log('✅ Doctors loaded:', response.data);
       setDoctors(response.data);
       setShowDoctorModal(true);
     } catch (error) {
-      console.error('Error loading doctors:', error);
+      console.error('❌ Error loading doctors:', error);
       toast.error('Psikologlar yüklenemedi');
     }
   };
