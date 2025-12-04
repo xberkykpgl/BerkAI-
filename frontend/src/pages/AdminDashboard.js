@@ -130,6 +130,8 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm p-8">
               {activeTab === 'overview' && <AdminOverview />}
               
+              {activeTab === 'pending' && <AdminPendingUsers />}
+              
               {activeTab === 'users' && (
                 selectedUserId ? (
                   <AdminUserDetail
