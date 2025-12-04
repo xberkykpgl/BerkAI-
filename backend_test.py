@@ -305,34 +305,65 @@ class BerkAIRAGMemoryTester:
         
         return memory_test_session_id
 
-    def test_video_analysis(self):
-        """Test video analysis with Gemini"""
-        print("\n📹 Testing Video Analysis...")
+    def test_profile_context_loading(self):
+        """Test Profile Context Loading"""
+        print("\n📋 Testing Profile Context Loading...")
         
-        if not self.test_session_id:
-            print("⚠️ Skipping video analysis - no session ID")
-            return
-        
-        # Create a simple test image (1x1 pixel base64)
-        test_image_b64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/8A8A"
-        
-        print("🔍 Testing Gemini Pro video analysis...")
-        success, response = self.run_api_test(
-            "Send message with video frame",
+        # Create a new session for user with existing profile
+        success, session_data = self.run_api_test(
+            "Create profile context test session",
             "POST",
-            f"sessions/{self.test_session_id}/chat",
-            200,
-            data={
-                "message": "Bu görüntüyü analiz edebilir misin?",
-                "video_frame": test_image_b64
-            }
+            "sessions?session_name=Profile Context Test",
+            200
         )
         
-        if success:
-            if 'video_analysis' in response and response['video_analysis']:
-                print(f"✅ Gemini analysis received: {json.dumps(response['video_analysis'], indent=2)}")
+        if not success or 'id' not in session_data:
+            self.log_test("Profile context session creation", False, "Failed to create session")
+            return
+        
+        context_session_id = session_data['id']
+        self.test_sessions.append(context_session_id)
+        print(f"📝 Created profile context session: {context_session_id}")
+        
+        # Send first message to trigger profile loading
+        success, response = self.run_api_test(
+            "Profile context loading test",
+            "POST",
+            f"sessions/{context_session_id}/chat",
+            200,
+            data={"message": "Merhaba, bugün nasılsın?"}
+        )
+        
+        if success and 'message' in response:
+            ai_response = response['message'].lower()
+            print(f"🤖 AI Response with Profile Context: {response['message'][:150]}...")
+            
+            # Check if response shows awareness of previous sessions
+            context_indicators = ['önceki', 'geçen', 'daha önce', 'seanslar', 'konuştuk', 'bahset']
+            has_context = any(indicator in ai_response for indicator in context_indicators)
+            
+            if has_context:
+                self.log_test("Profile context awareness", True, "AI shows awareness of previous sessions")
             else:
-                self.log_test("Gemini video analysis", False, "No video_analysis in response")
+                # This might be normal for a greeting, so we'll test with a more specific question
+                success2, response2 = self.run_api_test(
+                    "Specific context test",
+                    "POST",
+                    f"sessions/{context_session_id}/chat",
+                    200,
+                    data={"message": "Geçen seanslarımızda neler konuşmuştuk?"}
+                )
+                
+                if success2 and 'message' in response2:
+                    ai_response2 = response2['message'].lower()
+                    has_specific_context = any(indicator in ai_response2 for indicator in ['iş', 'stres', 'ilişki', 'partner'])
+                    
+                    if has_specific_context:
+                        self.log_test("Specific profile context recall", True, "AI recalled specific previous topics")
+                    else:
+                        self.log_test("Specific profile context recall", False, "AI did not recall specific previous topics")
+        
+        return context_session_id
 
     def test_analytics_endpoints(self):
         """Test analytics endpoints"""
