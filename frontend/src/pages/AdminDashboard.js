@@ -60,6 +60,7 @@ export default function AdminDashboard() {
 
   const tabs = [
     { id: 'overview', label: 'Özet', icon: LayoutDashboard },
+    { id: 'pending', label: 'Onay Bekleyenler', icon: Users },
     { id: 'users', label: 'Kullanıcılar', icon: Users },
     { id: 'sessions', label: 'Seanslar', icon: Activity },
     { id: 'messages', label: 'Mesajlar', icon: MessageSquare },
