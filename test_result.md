@@ -160,6 +160,18 @@ backend:
         comment: "Voice recognition is client-side only using Web Speech API"
 
 frontend:
+  - task: "Add admin approval UI for doctors/psychiatrists"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/admin/AdminPendingUsers.js, /app/frontend/src/pages/AdminDashboard.js, /app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created AdminPendingUsers component with approve/reject functionality. Added 'Onay Bekleyenler' tab to AdminDashboard. Updated AuthHandler in App.js to show alerts for pending_approval and rejected status. Doctors/psychiatrists will see approval pending message after signup."
+
   - task: "Integrate voiceRecognition.js helper into SessionPage.js"
     implemented: true
     working: true
