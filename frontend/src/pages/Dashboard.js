@@ -122,7 +122,7 @@ export default function Dashboard() {
         <Card className="p-6 mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-purple-100 mb-1">Hasta ID Numaranız</p>
+              <p className="text-sm text-purple-100 mb-1">Danışan ID Numaranız</p>
               <div className="flex items-center gap-3">
                 <p className="text-3xl font-bold font-mono">{user?.user_id_number || 'Yükleniyor...'}</p>
                 <Button
