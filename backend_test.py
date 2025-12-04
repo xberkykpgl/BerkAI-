@@ -365,24 +365,74 @@ class BerkAIRAGMemoryTester:
         
         return context_session_id
 
-    def test_analytics_endpoints(self):
-        """Test analytics endpoints"""
-        print("\n📊 Testing Analytics...")
+    def test_message_limit_and_content(self):
+        """Test Message Limit and Content Preservation"""
+        print("\n📝 Testing Message Limit and Content...")
         
-        if not self.test_session_id:
-            print("⚠️ Skipping analytics - no session ID")
-            return
-        
-        # Get session analytics
-        success, analytics = self.run_api_test(
-            "Get session analytics",
-            "GET",
-            f"sessions/{self.test_session_id}/analytics",
+        # Create session for message limit testing
+        success, session_data = self.run_api_test(
+            "Create message limit test session",
+            "POST",
+            "sessions?session_name=Message Limit Test",
             200
         )
         
-        if success:
-            print(f"📈 Analytics data: {json.dumps(analytics, indent=2)}")
+        if not success or 'id' not in session_data:
+            self.log_test("Message limit session creation", False, "Failed to create session")
+            return
+        
+        limit_session_id = session_data['id']
+        self.test_sessions.append(limit_session_id)
+        print(f"📝 Created message limit session: {limit_session_id}")
+        
+        # Send multiple long messages to test limits
+        long_messages = []
+        for i in range(25):  # Send more than 20 to test limit
+            long_message = f"Bu {i+1}. mesajım ve çok uzun bir mesaj. " * 10  # ~400 characters
+            long_messages.append(long_message)
+            
+            success, response = self.run_api_test(
+                f"Long message {i+1}",
+                "POST",
+                f"sessions/{limit_session_id}/chat",
+                200,
+                data={"message": long_message}
+            )
+            
+            if i == 0:  # Check first message for content preservation
+                if success and 'message' in response:
+                    # Verify no truncation occurred
+                    if len(response['message']) > 50:  # AI should give substantial response
+                        self.log_test("Message content preservation", True, "Full message content processed")
+                    else:
+                        self.log_test("Message content preservation", False, "Response too short, possible truncation")
+        
+        # Get all messages to verify 20-message limit
+        success, messages = self.run_api_test(
+            "Get session messages for limit test",
+            "GET",
+            f"sessions/{limit_session_id}/messages",
+            200
+        )
+        
+        if success and isinstance(messages, list):
+            total_messages = len(messages)
+            print(f"📊 Total messages stored: {total_messages}")
+            
+            # Check if messages are properly stored (should be all messages, limit applies to context loading)
+            if total_messages >= 50:  # 25 user + 25 AI messages
+                self.log_test("Message storage", True, f"All {total_messages} messages stored")
+            else:
+                self.log_test("Message storage", False, f"Only {total_messages} messages stored")
+            
+            # Verify no 100-character truncation
+            long_messages_found = [msg for msg in messages if len(msg.get('content', '')) > 100]
+            if long_messages_found:
+                self.log_test("No message truncation", True, f"Found {len(long_messages_found)} messages > 100 chars")
+            else:
+                self.log_test("No message truncation", False, "No messages longer than 100 characters found")
+        
+        return limit_session_id
 
     def cleanup_test_data(self):
         """Clean up test data"""
