@@ -267,6 +267,72 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Doctor Selection Modal */}
+      {showDoctorModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-white/20">
+            <div className="p-6 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">Psikolog Seç</h2>
+                <button onClick={() => setShowDoctorModal(false)} className="text-white/60 hover:text-white">
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="grid md:grid-cols-2 gap-4">
+                {doctors.map((doctor) => (
+                  <div key={doctor.id} className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 hover:border-white/30 transition-all cursor-pointer" onClick={() => setSelectedDoctor(doctor)}>
+                    <div className="flex items-center gap-4 mb-4">
+                      <img src={doctor.picture || 'https://via.placeholder.com/60'} className="w-16 h-16 rounded-full border-2 border-pink-500" alt="" />
+                      <div>
+                        <h3 className="text-lg font-bold text-white">{doctor.name}</h3>
+                        <p className="text-sm text-gray-400">{doctor.user_type === 'doctor' ? 'Psikolog' : 'Psikiyatrist'}</p>
+                      </div>
+                    </div>
+                    {doctor.specialization && (
+                      <p className="text-sm text-gray-300 mb-2">Uzmanlık: {doctor.specialization}</p>
+                    )}
+                    <p className="text-xs text-gray-400">{doctor.patient_count} danışan</p>
+                    <Button className="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-500">
+                      Seans Talep Et
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Form Modal */}
+      {selectedDoctor && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl max-w-md w-full border border-white/20 p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Seans Talebi Gönder</h3>
+            <p className="text-gray-300 mb-4">Psikolog: {selectedDoctor.name}</p>
+            <textarea 
+              placeholder="Notunuz (opsiyonel)..." 
+              className="w-full bg-white/5 border border-white/20 rounded-xl p-3 text-white mb-4"
+              rows={4}
+              id="request-notes"
+            />
+            <div className="flex gap-2">
+              <Button onClick={() => {
+                const notes = document.getElementById('request-notes').value;
+                requestSession(selectedDoctor.id, notes);
+                setSelectedDoctor(null);
+              }} className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500">
+                Gönder
+              </Button>
+              <Button onClick={() => setSelectedDoctor(null)} variant="outline" className="flex-1 border-white/20 text-white">
+                İptal
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
