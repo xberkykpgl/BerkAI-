@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Re-enable patient voice input in SessionPage.js using the stable voiceRecognition.js helper. Microphone button should be placed right above the send message button."
+user_problem_statement: "1) Re-enable patient voice input in SessionPage.js using the stable voiceRecognition.js helper. Microphone button should be placed right above the send message button. 2) BerkAI asks too many questions in long paragraphs. User wants: short responses (max 3-4 sentences), fewer questions per response, but detailed advice when giving recommendations."
 
 backend:
   - task: "Update BerkAI system prompt for concise responses"
