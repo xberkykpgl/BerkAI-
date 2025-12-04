@@ -80,7 +80,7 @@ function AuthHandler() {
         const response = await axios.get(`${API}/auth/me`);
         setUser(response.data);
         
-        if (location.pathname === '/') {
+        if (location.pathname === '/user-type-selection') {
           // Redirect based on user type
           if (response.data.user_type === 'doctor' || response.data.user_type === 'psychiatrist') {
             navigate('/doctor/dashboard');
@@ -90,7 +90,7 @@ function AuthHandler() {
         }
       } catch (error) {
         setUser(null);
-        if (location.pathname !== '/') {
+        if (location.pathname !== '/' && location.pathname !== '/user-type-selection') {
           navigate('/');
         }
       } finally {
