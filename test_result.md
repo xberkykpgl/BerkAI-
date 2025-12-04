@@ -105,7 +105,19 @@
 user_problem_statement: "Re-enable patient voice input in SessionPage.js using the stable voiceRecognition.js helper. Microphone button should be placed right above the send message button."
 
 backend:
-  - task: "No backend changes required"
+  - task: "Update BerkAI system prompt for concise responses"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Updated BerkAI system prompt to ensure short responses (max 3-4 sentences) during conversation, but detailed responses when giving advice. Added rules: 1) Introduction phase can have multiple questions, 2) Conversation phase limited to 3-4 sentences with few questions, 3) Advice phase can be detailed and comprehensive. Prevents overwhelming users with question storms and long paragraphs."
+        
+  - task: "No other backend changes required for voice input"
     implemented: true
     working: "NA"
     file: "N/A"
