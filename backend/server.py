@@ -361,18 +361,96 @@ async def complete_session(request: Request, session_id: str):
     
     data = await request.json()
     
+    # Get all messages from this session
+    session_messages = await db.messages.find(
+        {"session_id": session_id, "user_id": user.id},
+        {"_id": 0, "role": 1, "content": 1, "timestamp": 1}
+    ).sort("timestamp", 1).to_list(1000)
+    
+    # Generate AI summary of this session
+    session_summary = None
+    if session_messages and len(session_messages) > 2:
+        # Build conversation for AI analysis
+        conversation_text = ""
+        for msg in session_messages:
+            role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
+            conversation_text += f"{role}: {msg['content']}\n"
+        
+        # Use AI to extract key insights
+        summary_prompt = f"""Aşağıdaki terapi seansını analiz et ve ÖNEMLİ BİLGİLERİ ÇIKAR:
+
+{conversation_text}
+
+Lütfen şunları belirt:
+1. Ana konular ve sorunlar
+2. Kullanıcının paylaştığı önemli olaylar
+3. Tetikleyiciler (stres, kaygı yaratan şeyler)
+4. İlerleme işaretleri
+5. Kullanışlı başa çıkma stratejileri
+
+KISA VE ÖZ YAZ. Sadece ÖNEMLİ bilgileri çıkar."""
+
+        try:
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"summary_{session_id}"
+            ).with_model("openai", "gpt-5")
+            
+            ai_summary = await chat.send_message(UserMessage(text=summary_prompt))
+            session_summary = ai_summary
+        except Exception as e:
+            logging.error(f"Failed to generate session summary: {e}")
+            session_summary = "Özet oluşturulamadı"
+    
+    # Update session as completed
     await db.therapy_sessions.update_one(
         {"id": session_id, "user_id": user.id},
         {
             "$set": {
                 "status": "completed",
                 "ended_at": datetime.now(timezone.utc),
-                "analysis_summary": data.get("analysis_summary")
+                "analysis_summary": data.get("analysis_summary"),
+                "ai_summary": session_summary
             }
         }
     )
     
-    return {"success": True}
+    # Update or create user profile with session summary
+    if session_summary:
+        session_data = await db.therapy_sessions.find_one({"id": session_id})
+        
+        profile = await db.user_profiles.find_one({"user_id": user.id})
+        
+        if not profile:
+            # Create new profile
+            new_profile = UserProfile(
+                user_id=user.id,
+                session_summaries=[{
+                    "session_id": session_id,
+                    "date": datetime.now(timezone.utc).isoformat(),
+                    "summary": session_summary
+                }]
+            )
+            await db.user_profiles.insert_one(new_profile.model_dump())
+        else:
+            # Update existing profile
+            await db.user_profiles.update_one(
+                {"user_id": user.id},
+                {
+                    "$push": {
+                        "session_summaries": {
+                            "session_id": session_id,
+                            "date": datetime.now(timezone.utc).isoformat(),
+                            "summary": session_summary
+                        }
+                    },
+                    "$set": {
+                        "last_updated": datetime.now(timezone.utc)
+                    }
+                }
+            )
+    
+    return {"success": True, "summary_generated": session_summary is not None}
 
 # ============= MESSAGE & CHAT ROUTES =============
 
