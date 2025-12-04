@@ -40,7 +40,7 @@ export default function UserTypeSelection() {
         <div className="grid md:grid-cols-3 gap-6">
           <UserTypeCard
             icon={<UserCircle className="w-12 h-12" />}
-            title="Hasta"
+            title="Danışan"
             description="Psikolojik destek almak istiyorum"
             gradient="from-blue-500 to-cyan-500"
             onClick={() => handleLogin('patient')}
@@ -50,7 +50,7 @@ export default function UserTypeSelection() {
           <UserTypeCard
             icon={<Stethoscope className="w-12 h-12" />}
             title="Psikolog"
-            description="Hastalarımı takip etmek istiyorum"
+            description="Danışanlarımı takip etmek istiyorum"
             gradient="from-purple-500 to-pink-500"
             onClick={() => handleLogin('doctor')}
             dataTestId="doctor-card"
@@ -59,7 +59,7 @@ export default function UserTypeSelection() {
           <UserTypeCard
             icon={<Hospital className="w-12 h-12" />}
             title="Psikiyatrist"
-            description="Hastalarımı yönetmek istiyorum"
+            description="Danışanlarımı yönetmek istiyorum"
             gradient="from-emerald-500 to-teal-500"
             onClick={() => handleLogin('psychiatrist')}
             dataTestId="psychiatrist-card"
