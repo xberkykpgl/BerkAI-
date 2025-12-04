@@ -393,7 +393,8 @@ KISA VE ÖZ YAZ. Sadece ÖNEMLİ bilgileri çıkar."""
         try:
             chat = LlmChat(
                 api_key=EMERGENT_LLM_KEY,
-                session_id=f"summary_{session_id}"
+                session_id=f"summary_{session_id}",
+                system_message="Sen bir terapi seansı analiz uzmanısın. Seanslardan önemli bilgileri çıkarıp kısa özetler hazırlarsın."
             ).with_model("openai", "gpt-5")
             
             ai_summary = await chat.send_message(UserMessage(text=summary_prompt))
