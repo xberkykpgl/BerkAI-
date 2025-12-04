@@ -261,6 +261,10 @@ async def create_session_from_emergent(request: Request, response: Response):
         # Generate unique ID
         user_id_number = f"BRK{uuid.uuid4().hex[:8].upper()}"
         
+        # Determine account status based on user type
+        # Doctors and psychiatrists need admin approval
+        account_status = "pending" if user_type in ["doctor", "psychiatrist"] else "approved"
+        
         # Create new user
         user_doc = {
             "_id": user_data["email"],
@@ -268,14 +272,47 @@ async def create_session_from_emergent(request: Request, response: Response):
             "name": user_data["name"],
             "picture": user_data.get("picture"),
             "user_type": user_type,
+            "account_status": account_status,
+            "status_updated_by": None,
+            "status_updated_at": None,
+            "rejection_reason": None,
             "user_id_number": user_id_number,
             "assigned_patients": [],
             "therapy_approach": "general",
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(user_doc)
+        
+        # If doctor/psychiatrist, return pending status without creating session
+        if account_status == "pending":
+            return {
+                "success": False,
+                "pending_approval": True,
+                "message": "Hesabınız admin onayı bekliyor. Onaylandıktan sonra giriş yapabileceksiniz.",
+                "user_type": user_type
+            }
+    else:
+        # Check account status for existing users
+        if existing_user.get("user_type") in ["doctor", "psychiatrist"]:
+            account_status = existing_user.get("account_status", "approved")
+            
+            if account_status == "pending":
+                return {
+                    "success": False,
+                    "pending_approval": True,
+                    "message": "Hesabınız hala admin onayı bekliyor. Lütfen sabırlı olun.",
+                    "user_type": existing_user.get("user_type")
+                }
+            elif account_status == "rejected":
+                rejection_reason = existing_user.get("rejection_reason", "Hesabınız reddedildi.")
+                return {
+                    "success": False,
+                    "rejected": True,
+                    "message": f"Hesabınız reddedildi. Sebep: {rejection_reason}",
+                    "user_type": existing_user.get("user_type")
+                }
     
-    # Create session
+    # Create session for approved users
     session_token = f"berkai_session_{uuid.uuid4()}"
     session_doc = {
         "id": str(uuid.uuid4()),
