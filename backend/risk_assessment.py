@@ -1,5 +1,5 @@
 """
-Risk Assessment Module for BerkAI Professional
+Risk Assessment Module for MiraMind Professional
 Analyzes messages for crisis, self-harm, and suicide risk
 """
 

@@ -191,7 +191,7 @@ class DoctorNote(BaseModel):
 
 # Admin credentials from environment
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@berkai.com')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'BerkAI2025!')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'MiraMind2025!')
 AUTH_SERVICE_URL = os.environ.get('AUTH_SERVICE_URL', 'https://demobackend.emergentagent.com')
 
 async def get_current_user(request: Request) -> Optional[User]:
@@ -429,7 +429,7 @@ async def complete_session(request: Request, session_id: str):
         # Build conversation for AI analysis
         conversation_text = ""
         for msg in session_messages:
-            role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
+            role = "Kullanıcı" if msg['role'] == 'user' else "MiraMind"
             conversation_text += f"{role}: {msg['content']}\n"
         
         # Use AI to extract key insights
@@ -645,13 +645,13 @@ async def chat_with_berkai(request: Request, session_id: str):
     # Build current conversation context
     context_messages = []
     for msg in current_session_messages[-10:]:  # Son 10 mesaj
-        role = "Kullanıcı" if msg['role'] == 'user' else "BerkAI"
+        role = "Kullanıcı" if msg['role'] == 'user' else "MiraMind"
         context_messages.append(f"{role}: {msg['content']}")
     
     current_conversation = "\n".join(context_messages)
     
     # Enhanced system prompt with full user profile
-    system_prompt = f"""Sen BerkAI'sın, empatik ve samimi bir psikolojik destek asistanısın.
+    system_prompt = f"""Sen MiraMind'sın, empatik ve samimi bir psikolojik destek asistanısın.
 
 Kullanıcı: {user.name}
 
@@ -1204,7 +1204,7 @@ async def get_ai_settings(request: Request):
             "vision_model": "gemini-2.5-pro",
             "tts_voice": "nova",
             "tts_model": "tts-1",
-            "system_prompt": "Sen BerkAI'sın, empatik ve profesyonel bir psikolojik destek asistanısın.",
+            "system_prompt": "Sen MiraMind'sın, empatik ve profesyonel bir psikolojik destek asistanısın.",
             "max_message_length": 2000,
             "enable_video_analysis": True,
             "enable_tts": True,
