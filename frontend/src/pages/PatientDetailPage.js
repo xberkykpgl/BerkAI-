@@ -22,6 +22,7 @@ export default function PatientDetailPage() {
   const [messages, setMessages] = useState([]);
   const [riskAlerts, setRiskAlerts] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
