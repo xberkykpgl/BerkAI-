@@ -24,8 +24,8 @@ function AuthHandler() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Skip auth check for admin routes
-    if (location.pathname.startsWith('/admin')) {
+    // Skip auth check for admin routes and landing page
+    if (location.pathname.startsWith('/admin') || location.pathname === '/') {
       setIsChecking(false);
       return;
     }
