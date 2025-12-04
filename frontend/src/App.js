@@ -24,6 +24,12 @@ function AuthHandler() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Skip auth check for admin routes
+    if (location.pathname.startsWith('/admin')) {
+      setIsChecking(false);
+      return;
+    }
+
     const checkAuth = async () => {
       // Check for session_id in URL fragment
       const hash = window.location.hash;
