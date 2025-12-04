@@ -66,6 +66,32 @@ export default function Dashboard() {
     }
   };
 
+  const loadDoctors = async () => {
+    try {
+      const response = await axios.get(`${API}/doctors/available`);
+      setDoctors(response.data);
+      setShowDoctorModal(true);
+    } catch (error) {
+      console.error('Error loading doctors:', error);
+      toast.error('Psikologlar yüklenemedi');
+    }
+  };
+
+  const requestSession = async (doctorId, notes) => {
+    try {
+      await axios.post(`${API}/session-requests`, {
+        doctor_id: doctorId,
+        notes: notes
+      });
+      toast.success('Seans talebi gönderildi!');
+      setShowDoctorModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error requesting session:', error);
+      toast.error('Talep gönderilemedi');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
