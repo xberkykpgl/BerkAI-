@@ -566,9 +566,10 @@ class BerkAIRAGMemoryTester:
                 print(f"⚠️ Cleanup warning: {str(e)}")
 
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting BerkAI Backend API Tests")
+        """Run all MongoDB + RAG memory system tests"""
+        print("🚀 Starting BerkAI MongoDB + RAG Memory System Tests")
         print(f"🌐 Testing against: {self.base_url}")
+        print("🎯 Focus: Session summaries, multi-session memory, profile context loading, message limits")
         
         # Setup
         if not self.setup_test_user():
@@ -576,28 +577,50 @@ class BerkAIRAGMemoryTester:
             return False
         
         try:
-            # Run all test suites
+            # Run authentication test first
             self.test_auth_endpoints()
-            self.test_session_endpoints()
-            self.test_message_endpoints()
-            self.test_video_analysis()
-            self.test_analytics_endpoints()
+            
+            # Run RAG memory system tests in sequence
+            print("\n" + "="*60)
+            print("🧠 MONGODB + RAG MEMORY SYSTEM TESTS")
+            print("="*60)
+            
+            # Test 1: Session Summary Generation
+            self.test_session_summary_generation()
+            
+            # Test 2: Multi-Session Memory
+            self.test_multi_session_memory()
+            
+            # Test 3: Profile Context Loading
+            self.test_profile_context_loading()
+            
+            # Test 4: Message Limit and Content
+            self.test_message_limit_and_content()
+            
+            # Verify MongoDB collections
+            self.verify_mongodb_collections()
             
         finally:
             # Always cleanup
             self.cleanup_test_data()
         
-        # Print summary
-        print(f"\n📊 Test Summary:")
+        # Print detailed summary
+        print(f"\n" + "="*60)
+        print(f"📊 MONGODB + RAG MEMORY SYSTEM TEST SUMMARY")
+        print(f"="*60)
         print(f"Tests run: {self.tests_run}")
         print(f"Tests passed: {self.tests_passed}")
         print(f"Tests failed: {len(self.failed_tests)}")
         print(f"Success rate: {(self.tests_passed/self.tests_run*100):.1f}%")
+        print(f"Sessions created: {len(self.test_sessions)}")
+        print(f"Summaries generated: {len(self.session_summaries)}")
         
         if self.failed_tests:
             print(f"\n❌ Failed Tests:")
             for test in self.failed_tests:
                 print(f"  - {test['test']}: {test['error']}")
+        else:
+            print(f"\n✅ All tests passed! MongoDB + RAG memory system is working correctly.")
         
         return len(self.failed_tests) == 0
 
