@@ -117,6 +117,21 @@ class Admin(BaseModel):
     password_hash: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class SessionRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    patient_id: str
+    doctor_id: str
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    status: str = "pending"  # pending, accepted, rejected, completed
+    preferred_date: Optional[str] = None
+    notes: Optional[str] = None
+    ai_risk_level: Optional[str] = None  # low, medium, high, critical
+    ai_summary: Optional[str] = None
+    response_message: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    video_call_url: Optional[str] = None  # Placeholder for future video integration
+
 class AISettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
